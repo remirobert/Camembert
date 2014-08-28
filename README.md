@@ -147,3 +147,6 @@ for currentElement :AnyObject in Camembert.getObjectsWithQuerry("SELECT * from B
 To get an accurate list of elements in a table, you must provide a **SQL query**. Above all, the **name of the table**, which is used to create objects automatically. You absolutely have a **class** corespondant to your table, as in the examples above.
 
 The objects list, is **universal** (AnyObject), but all objects are created from your class, so you can cast it.
+
+<h1 align="center">Usage</h1>
+Camembert is available under the MIT license. See the LICENSE file for more info.
