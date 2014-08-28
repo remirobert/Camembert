@@ -25,7 +25,7 @@ class DataAccess {
 }
 
 class Camembert {
-    class func createDataBase(nameDatabase :String) -> Bool {
+    class func initDataBase(nameDatabase :String) -> Bool {
         let documentDirectory :String = NSSearchPathForDirectoriesInDomains(
             .DocumentDirectory, .UserDomainMask, true)[0] as String
         

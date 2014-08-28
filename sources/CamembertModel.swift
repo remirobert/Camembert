@@ -70,6 +70,9 @@ class CamembertModel :NSObject {
     }
     
     func remove() {
+        if self.id == nil {
+            return Void()
+        }
         var requestDelete :String = "DELETE FROM \(self._nameTable) WHERE id=\(self.id)"
         camembertExecSqlite3(DataAccess.access.dataAccess, requestDelete.bridgeToObjectiveC().cString())
         self.id = -1
