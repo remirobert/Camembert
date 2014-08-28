@@ -5,6 +5,7 @@
 
 Camembert is written in a **swift** toolkit for using sqlite3 easier. Is is available for **OSX** and **iOS**.
 
+
 <h1 align="center">Installation</h1>
 
 First you need to add a bridging-header to your project.
@@ -26,6 +27,7 @@ If you need to add one, follow these instructions:
 - Then copy the **Bridging-header.h** file, in your project.
 
 When the Bridging Header is created, simply copy the files *.m and *.swift from the directory sources.
+
 
 <h1 align="center">Usage</h1>
 
@@ -113,3 +115,18 @@ var book = Book(id: 4)
 book.remove()
 ```
 Just call the **remove** method, for remove the element in the Table.
+
+<h4 align="center">Get the number of elements in a table</h4>
+
+```Swift
+var numberElement :Int = Book.numberElement()
+println("number books : \(numberElement)")
+```
+
+<h4 align="center">Get list of elements in a table</h4>
+
+```Swift
+for  currentElement :AnyObject in Camembert.getObjectsWithQuerry("SELECT * from Book;", table: "Book") {
+  println("current book : \((currentElement as Book).title)")
+}
+```
