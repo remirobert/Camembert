@@ -59,3 +59,40 @@ class Book :CamembertModel {
     var currentPage :INTEGER = 0
 }
 ```
+_The Book class corresponds to model, of my table in my Book database._
+
+<h4 align="center">Create a new element</h4>
+
+```Swift
+var newBook = Book()
+newBook.title = "La Fontaine : Fables"
+newBook.numberPage = 544
+newBook.currentPage = 43
+newBook.push()
+```
+As you can see for creating a new element, you just need to create a new object, and call the push method.
+If the table doest not exist yet, it will be created automatly.
+
+<h4 align="center">Update element</h4>
+
+```swift
+var newBook = Book()
+newBook.title = "La Fontaine : Fables"
+newBook.numberPage = 544
+newBook.currentPage = 43
+newBook.push()
+
+//...
+
+newBook.currentPage = 103
+newBook.update()
+```
+To change something in a existing element, you just need to call the update method.
+To do this you need to have an object already created.
+Or you can use the manufacturer for a specific element based on the ID.
+
+```swift
+var book = Book(id: 4)
+book.currentPage = 103
+book.update()
+```
