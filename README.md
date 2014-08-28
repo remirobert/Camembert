@@ -25,4 +25,6 @@ If you need to add one, follow these instructions:
 - Add the following line : **${YOURPROJ}Bridging-Header.h**
 - Then copy the **Bridging-header.h** file, in your project.
 
+When the Bridging Header is created, simply copy the files *.m and *.swift from the directory sources.
+
 <h1 align="center">Usage</h1>
