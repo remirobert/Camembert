@@ -3,9 +3,8 @@
   <h1 align="center">Camembert</h1>
 </p>
 
-Camembert is written in a **swift** toolkit for using sqlite3 easier. Is is available for **OSX** and **iOS**.
-
-
+Camembert is a toolkit written in **swift**, for using sqlite3 easier. Is is available for **OSX** and **iOS**.
+</br>
 <h1 align="center">Installation</h1>
 
 First you need to add a bridging-header to your project.
@@ -63,6 +62,7 @@ class Book :CamembertModel {
 ```
 _The Book class corresponds to model, of my table in my Book database._
 
+
 <h4 align="center">Create a new element</h4>
 
 ```Swift
@@ -74,6 +74,7 @@ newBook.push()
 ```
 As you can see for creating a new element, you just need to create a new object, and call the push method.
 If the table doest not exist yet, it will be created automatly.
+
 
 <h4 align="center">Update element</h4>
 
@@ -98,6 +99,7 @@ var book = Book(id: 4)
 book.currentPage = 103
 book.update()
 ```
+
 <h4 align="center">Remove element</h4>
 
 ```swift
@@ -116,12 +118,14 @@ book.remove()
 ```
 Just call the **remove** method, for remove the element in the Table.
 
+
 <h4 align="center">Get the number of elements in a table</h4>
 
 ```Swift
 var numberElement :Int = Book.numberElement()
 println("number books : \(numberElement)")
 ```
+
 
 <h4 align="center">Get list of elements in a table</h4>
 
