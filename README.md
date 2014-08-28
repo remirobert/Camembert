@@ -126,7 +126,24 @@ println("number books : \(numberElement)")
 <h4 align="center">Get list of elements in a table</h4>
 
 ```Swift
-for  currentElement :AnyObject in Camembert.getObjectsWithQuerry("SELECT * from Book;", table: "Book") {
+//display title of the library
+for currentElement :AnyObject in Camembert.getObjectsWithQuerry("SELECT * from Book;", table: "Book") {
   println("current book : \((currentElement as Book).title)")
 }
+
+//reset currentPage
+var elements = Camembert.getObjectsWithQuerry("SELECT * from Book WHERE numberPage >= 100;", table: "Book")
+for currentElement in elements {
+  (currentElement as Book).currentPage = 0
+  (currentElement as Book).update()
+}
+
+//remove all element
+for currentElement :AnyObject in Camembert.getObjectsWithQuerry("SELECT * from Book;", table: "Book") {
+  (currentElement as Book).remove()
+}
 ```
+
+To get an accurate table of elements in a list, you must provide a SQL query. Above all, the name of the table, which is used to create objects automatically. You absolutely have a class corespondant to your table, as in the examples above.
+
+The objects list, is universal (AnyObject), but all objects are created from your class, so you can cast it.
