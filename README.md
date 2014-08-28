@@ -38,3 +38,24 @@ Camembert.initDataBase("dataBase.sql")
 Camembert.closeDataBase()
 ```
 And **voila !**, you are ready to use Camembert.
+
+You need now to create a class, that corespond to your table.
+For doing that, you **MUST** inherit of **CamembertModel** class.
+And use the **typealias** for create your rows.
+You have to provide defaults values.
+
+```Swift
+typealias INTEGER = Int
+typealias REAL = Float
+typealias TEXT = String
+```
+
+This is a example of my table Book:
+
+```Objective-C
+class Book :CamembertModel {
+    var title :TEXT = ""
+    var numberPage :INTEGER = 0
+    var currentPage :INTEGER = 0
+}
+```
