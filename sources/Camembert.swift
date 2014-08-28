@@ -12,8 +12,6 @@ import Foundation
 typealias INTEGER = Int
 typealias REAL = Float
 typealias TEXT = String
-typealias BLOB = NSData
-typealias ID = Int
 
 class DataAccess {
     var dataAccess :COpaquePointer = nil
@@ -37,10 +35,8 @@ class Camembert {
         
         if ret != SQLITE_OK {
             DataAccess.access.dataAccess = nil
-            NSLog("[FAIL] Open dataBase", nil)
             return false
         }
-        NSLog("[OK] Open dataBase", nil)
         return true
     }
     

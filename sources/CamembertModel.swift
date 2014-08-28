@@ -89,10 +89,6 @@ class CamembertModel :NSObject {
                 arraySirng.append("\(reflectionClass.0) REAL")
             case let v where currentValue as? TEXT:
                 arraySirng.append("\(reflectionClass.0) TEXT")
-            case let v where currentValue as? BLOB:
-                arraySirng.append("\(reflectionClass.0) BLOB")
-            case let v where currentValue as? ID:
-                arraySirng.append("\(reflectionClass.0) ID")
             default: return nil
             }
         }
