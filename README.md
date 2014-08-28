@@ -87,12 +87,29 @@ newBook.push()
 newBook.currentPage = 103
 newBook.update()
 ```
-To change something in a existing element, you just need to call the update method.
+To change something in a existing element, you just need to call the **update** method.
 To do this you need to have an object already created.
-Or you can use the manufacturer for a specific element based on the ID.
+Or you can use the constructor with a specific element based on the **ID**:
 
 ```swift
 var book = Book(id: 4)
 book.currentPage = 103
 book.update()
 ```
+<h4 align="center">Remove element</h4>
+
+```swift
+var newBook = Book()
+newBook.title = "La Fontaine : Fables"
+newBook.numberPage = 544
+newBook.currentPage = 43
+newBook.push()
+
+//...
+
+newBook.remove()
+
+var book = Book(id: 4)
+book.remove()
+```
+Just call the **remove** method, for remove the element in the Table.
