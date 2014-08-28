@@ -3,7 +3,7 @@
   <h1 align="center">Camembert</h1>
 </p>
 
-Camembert is written in a **swift** toolkit for using sqlite3 easier. Is is available for **OSX** and **iOS**.
+Camembert is a toolkit written in **swift**, for using sqlite3 easier. Is is available for **OSX** and **iOS**.
 
 
 <h1 align="center">Installation</h1>
