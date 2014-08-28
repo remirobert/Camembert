@@ -152,6 +152,8 @@ To get an accurate list of elements in a table, you must provide a **SQL query**
 
 The objects list, is **universal** (AnyObject), but all objects are created from your class, so you can cast it.
 
+**_Camembert, will improve, here's the first version._**
+
 <h1 align="center">Author</h1>
 Rémi ROBERT, remirobert33530@gmail.com
 
