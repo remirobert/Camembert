@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "sqlite3.h"
 #import <objc/runtime.h>
-#import "Person.h"
 #import "SwiftSQl-Swift.h"
 
 
