@@ -148,5 +148,8 @@ To get an accurate list of elements in a table, you must provide a **SQL query**
 
 The objects list, is **universal** (AnyObject), but all objects are created from your class, so you can cast it.
 
-<h1 align="center">Usage</h1>
+<h1 align="center">Author</h1>
+Rémi ROBERT, remirobert33530@gmail.com
+
+<h1 align="center">Licence</h1>
 Camembert is available under the MIT license. See the LICENSE file for more info.
