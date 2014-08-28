@@ -28,3 +28,13 @@ If you need to add one, follow these instructions:
 When the Bridging Header is created, simply copy the files *.m and *.swift from the directory sources.
 
 <h1 align="center">Usage</h1>
+
+First thing to do, is the initialise your sqlite3 database.
+To do this you must make two calls before any other use.
+
+```Swift
+Camembert.initDataBase("dataBase.sql")
+// ...
+Camembert.closeDataBase()
+```
+And **voila !**, you are ready to use Camembert.
