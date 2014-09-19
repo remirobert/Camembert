@@ -30,7 +30,7 @@ When the Bridging Header is created, simply copy the files *.m and *.swift from 
 
 <h1 align="center">Usage</h1>
 
-First thing to do, is the initialise your sqlite3 database.
+First thing to do, is to initialise your sqlite3 database.
 To do this you must make two calls before any other use.
 
 ```Swift
@@ -60,7 +60,7 @@ class Book :CamembertModel {
     var currentPage :INTEGER = 0
 }
 ```
-_The Book class corresponds to model, of my table in my Book database._
+_The Book class corresponds to model, of my table Book in my database._
 
 
 <h4 align="center">Create a new element</h4>
