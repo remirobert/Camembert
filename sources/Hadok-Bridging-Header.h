@@ -1,9 +1,5 @@
 //
-//  Bridging-Header.h
-//  SwiftSQL
-//
-//  Created by Remi Robert on 20/08/14.
-//  Copyright (c) 2014 remirobert. All rights reserved.
+//  Use this file to import your target's public headers that you would like to expose to Swift.
 //
 
 #import <UIKit/UIKit.h>

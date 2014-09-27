@@ -9,8 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "sqlite3.h"
 #import <objc/runtime.h>
-#import "SwiftSQl-Swift.h"
-
 
 BOOL camembertExecSqlite3(void *ptrSqlite3, const char *request) {
     char *msgErr;
@@ -26,7 +24,8 @@ BOOL camembertExecSqlite3(void *ptrSqlite3, const char *request) {
 
 id camembertCreateObject(NSString *nameClass) {
     NSString *appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"];
-    NSString *classStringName = [NSString stringWithFormat:@"_TtC%d%@%d%@", appName.length, appName, nameClass.length, nameClass];
+    NSString *classStringName = [NSString stringWithFormat:@"_TtC%lu%@%lu%@", (unsigned long)appName.length,
+                                 appName, (unsigned long)nameClass.length, nameClass];
     
     Class customClass = NSClassFromString(classStringName);
     if (customClass == nil) {
