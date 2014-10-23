@@ -7,7 +7,7 @@ Camembert is a toolkit written in **swift**, for using sqlite3 easier. Is is ava
 </br>
 <h1 align="center">Installation</h1>
 
-First you need to add a bridging-header to your project.
+First you need to add a **bridging-header** to your project.
 If it is already set, import Camembert.
 
 ```Objective-C
@@ -20,7 +20,7 @@ If you need to add one, follow these instructions:
 - Go into the **settings** of your project in the category **build setting**.
 - Search **Objective-C Bridging Header** with the search bar.
 - Add the following line : **headerFileName.h**
-- Then import ```Objective-C#import "Camembert.h"``` in your header file.
+- Then import ```Objective-C #import "Camembert.h"``` in your header file.
 
 When the Bridging Header is created, simply copy the files *.m and *.swift from the directory sources.
 
@@ -33,8 +33,6 @@ It will create for you the database in the document directory, if it don't exist
 
 ```Swift
 Camembert.initDataBase("dataBase.sql")
-// ...
-Camembert.closeDataBase()
 ```
 And **voila !**, you are ready to use Camembert.
 
