@@ -20,7 +20,7 @@ If you need to add one, follow these instructions:
 - Go into the **settings** of your project in the category **build setting**.
 - Search **Objective-C Bridging Header** with the search bar.
 - Add the following line : **headerFileName.h**
-- Then import ```Objective-C #import "Camembert.h"``` in your header file.
+- Then import ```#import "Camembert.h"``` in your header file.
 
 When the Bridging Header is created, simply copy the files *.m and *.swift from the directory sources.
 
