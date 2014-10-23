@@ -6,9 +6,7 @@
 //  Copyright (c) 2014 remirobert. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import "sqlite3.h"
-#import <objc/runtime.h>
+#import "Camembert.h"
 
 BOOL camembertExecSqlite3(void *ptrSqlite3, const char *request) {
     char *msgErr;

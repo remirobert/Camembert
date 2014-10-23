@@ -8,13 +8,20 @@
 
 import Foundation
 
-
 typealias INTEGER = Int
 typealias REAL = Float
 typealias TEXT = String
 
+enum Select {
+    case SelectAll
+    case CustomRequest(String)
+    case Limit(Int)
+    case Between(Int, Int)
+}
+
 class DataAccess {
     var dataAccess :COpaquePointer = nil
+    var nameDataBase: String? = nil
     
     class var access :DataAccess {
     struct Static {
@@ -37,6 +44,7 @@ class Camembert {
         if ret != SQLITE_OK {
             return createDataBase(nameDatabase)
         }
+        DataAccess.access.nameDataBase = nameDatabase
         return true
     }
 
@@ -46,16 +54,13 @@ class Camembert {
         
         let pathDatabase = documentDirectory + "/" + nameDatabase
         
-        println("path : \(pathDatabase)")
-        
         if sqlite3_open_v2(pathDatabase.cStringUsingEncoding(NSUTF8StringEncoding)!,
             &DataAccess.access.dataAccess, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), nil) != SQLITE_OK {
+
                 DataAccess.access.dataAccess = nil
-                
-                println("creation failed")
                 return false
         }
-        println("creation ok !!")
+        DataAccess.access.nameDataBase = nameDatabase
         return true
     }
     
@@ -67,20 +72,14 @@ class Camembert {
         DataAccess.access.dataAccess = nil
         return false
     }
-    
-    class func removeTable(tableName :String) {
-        var requestRemove :String = "DROP TABLE IF EXISTS \(tableName);"
-        
-        camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
-            requestRemove.cStringUsingEncoding(NSUTF8StringEncoding)!)
-    }
-    
-    class func getObjectsWithQuery(query :String, table :String) -> [AnyObject]! {
+
+    func getObjectsWithQuery(query :String, table :String) -> [AnyObject]! {
         var ptrRequest :COpaquePointer = nil
         var objects :Array<AnyObject> = []
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
             query.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
+                sqlite3_finalize(ptrRequest);
                 return nil
         }
         while (sqlite3_step(ptrRequest) == SQLITE_ROW) {
@@ -106,6 +105,7 @@ class Camembert {
             }
             objects.append(currentObject)
         }
+        sqlite3_finalize(ptrRequest);
         return objects
     }
     
@@ -114,8 +114,10 @@ class Camembert {
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
             query.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
+                sqlite3_finalize(ptrRequest);
                 return nil
         }
+        sqlite3_finalize(ptrRequest);
         return ptrRequest
     }
     
@@ -126,11 +128,13 @@ class Camembert {
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
             requestListTables.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
+                sqlite3_finalize(ptrRequest);
                 return tables
         }
         while sqlite3_step(ptrRequest) == SQLITE_ROW {
             tables.append(String.fromCString(UnsafePointer<CChar>(sqlite3_column_text(ptrRequest, 0)))!)
         }
+        sqlite3_finalize(ptrRequest);
         return tables
     }
 }

@@ -16,11 +16,17 @@ class CamembertModel :NSObject {
     func setId(id :Int) {
         self.id = id
     }
-        
+    
+    private class func openConnection() {
+        Camembert.closeDataBase()
+        Camembert.initDataBase(DataAccess.access.nameDataBase!)
+    }
+    
     func push() {
         if self.id != nil {
             return Void()
         }
+        CamembertModel.openConnection()
         var requestPush = "INSERT INTO " + self.nameTable + " ("
 
         for var index = 1; index < reflect(self).count; index++ {
@@ -52,6 +58,7 @@ class CamembertModel :NSObject {
         if self.id == -1 {
             return Void()
         }
+        CamembertModel.openConnection()
         var requestUpdate :String = "UPDATE \(self.nameTable) SET "
         
         for var index = 1; index < reflect(self).count; index++ {
@@ -66,9 +73,7 @@ class CamembertModel :NSObject {
             case reflect(self).count - 1: requestUpdate += " WHERE id = \(self.id!);"
             default: requestUpdate += ", "
             }
-        }
-        println("request : \(requestUpdate)")
-        
+        }        
         camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
             requestUpdate.cStringUsingEncoding(NSUTF8StringEncoding)!)
     }
@@ -77,6 +82,7 @@ class CamembertModel :NSObject {
         if self.id == nil {
             return Void()
         }
+        CamembertModel.openConnection()
         var requestDelete :String = "DELETE FROM \(self.nameTable) WHERE id=\(self.id!)"
         
         camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
@@ -85,6 +91,8 @@ class CamembertModel :NSObject {
     }
     
     func getSchemaTable() -> [String]! {
+        CamembertModel.openConnection()
+
         var arraySirng :[String] = []
         
         for var index = 1; index < reflect(self).count; index++ {
@@ -105,6 +113,8 @@ class CamembertModel :NSObject {
     }
     
     func isTableExist() -> Bool {
+        CamembertModel.openConnection()
+
         for currentTable in Camembert.getListTable() {
             if currentTable == self.nameTable {
                 return true
@@ -126,19 +136,27 @@ class CamembertModel :NSObject {
     }
     
     func _initNameTable() {
+        CamembertModel.openConnection()
+
         var tmpNameTable = NSString(CString: object_getClassName(self), encoding: NSUTF8StringEncoding) as String
         self.nameTable = CamembertModel.getNameTable(&tmpNameTable).componentsSeparatedByString(".")[1]
     }
     
     func sendRequest(inout ptrRequest :COpaquePointer, request :String) -> Bool {
+        CamembertModel.openConnection()
+
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
             request.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
+            sqlite3_finalize(ptrRequest);
             return false
         }
+        sqlite3_finalize(ptrRequest);
         return true
     }
     
     func createTable() -> Bool {
+        CamembertModel.openConnection()
+
         if self.isTableExist() == false {
             var requestCreateTable :String = "CREATE TABLE " + self.nameTable + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
             if let configurationTable = self.getSchemaTable() {
@@ -158,6 +176,8 @@ class CamembertModel :NSObject {
     }
     
     class func numberElement() -> Int {
+        CamembertModel.openConnection()
+
         var tmpNameTable = NSString(CString: class_getName(self), encoding: NSUTF8StringEncoding) as String
         tmpNameTable = tmpNameTable.componentsSeparatedByString(".")[1]
         var requestNumberlement :String = "SELECT COUNT(*) FROM \(CamembertModel.getNameTable(&tmpNameTable));"
@@ -165,20 +185,26 @@ class CamembertModel :NSObject {
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
             requestNumberlement.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
+            sqlite3_finalize(ptrRequest);
             return 0
         }
         if sqlite3_step(ptrRequest) == SQLITE_ROW {
-            return Int(sqlite3_column_int(ptrRequest, 0))
+            let number = Int(sqlite3_column_int(ptrRequest, 0))
+            sqlite3_finalize(ptrRequest);
+            return number
         }
         return 0
     }
     
     func _initWithId(id :Int) {
+        CamembertModel.openConnection()
+
         var requestInit :String = "SELECT * FROM \(self.nameTable) WHERE id=\(id);"
         var ptrRequest :COpaquePointer = nil
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
             requestInit.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
+            sqlite3_finalize(ptrRequest);
             return Void()
         }
 
@@ -204,10 +230,43 @@ class CamembertModel :NSObject {
                 }
             }
         }
+        sqlite3_finalize(ptrRequest);
+    }
+    
+    class func select(selectRequest select: Select, classModel: AnyClass) -> [AnyObject] {
+        let camembert = Camembert()
+        let table = (NSString(CString: object_getClassName(classModel),
+            encoding: NSUTF8StringEncoding) as String).componentsSeparatedByString(".")[1]
+        var requestSelect: String? = nil
+        
+        switch select {
+        case .SelectAll:
+            requestSelect = "SELECT * FROM \(table)"
+        case .Limit(let value):
+            requestSelect = "SELECT * FROM \(table) LIMIT \(value)"
+        case .Between(let startValue, let endValue):
+            requestSelect = "SELECT * FROM \(table) WHERE ID BETWEEN \(startValue) AND \(endValue)"
+        case .CustomRequest(let request):
+            requestSelect = request
+        }
+        if let ret = camembert.getObjectsWithQuery(requestSelect!, table: table) {
+            return ret
+        }
+        return []
+    }
+    
+    class func removeTable(classModel: AnyClass) {
+        CamembertModel.openConnection()
+        let table = (NSString(CString: object_getClassName(classModel),
+            encoding: NSUTF8StringEncoding) as String).componentsSeparatedByString(".")[1]
+        let requestRemove :String = "DROP TABLE IF EXISTS \(table);"
+        
+        camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
+            requestRemove.cStringUsingEncoding(NSUTF8StringEncoding)!)
     }
     
     override init() {
-        super.init()
+        super.init()        
         self._initNameTable()
         self.createTable()
     }

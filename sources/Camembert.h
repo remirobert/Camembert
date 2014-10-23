@@ -10,7 +10,9 @@
 #define CamemberDebug_Camembert_h
 
 #import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 #import "sqlite3.h"
+#import <objc/runtime.h>
 
 BOOL camembertExecSqlite3(void *ptrSqlite3, const char *request);
 id camembertCreateObject(NSString *nameClass);
