@@ -8,14 +8,10 @@ Camembert is a toolkit written in **swift**, for using sqlite3 easier. Is is ava
 <h1 align="center">Installation</h1>
 
 First you need to add a bridging-header to your project.
-If it is already set to copy the contents of Bridging-header.h in yours.
+If it is already set, import Camembert.
 
 ```Objective-C
-#import <UIKit/UIKit.h>
-#import "sqlite3.h"
-
-BOOL camembertExecSqlite3(void *ptrSqlite3, const char *request);
-id camembertCreateObject(NSString *nameClass);
+#import "Camembert.h"
 ```
 
 If you need to add one, follow these instructions:
