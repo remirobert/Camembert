@@ -35,9 +35,27 @@ class Camembert {
             &DataAccess.access.dataAccess)
         
         if ret != SQLITE_OK {
-            DataAccess.access.dataAccess = nil
-            return false
+            return createDataBase(nameDatabase)
         }
+        return true
+    }
+
+    class func createDataBase(nameDatabase: String) -> Bool {
+        let documentDirectory :String = NSSearchPathForDirectoriesInDomains(
+            .DocumentDirectory, .UserDomainMask, true)[0] as String
+        
+        let pathDatabase = documentDirectory + "/" + nameDatabase
+        
+        println("path : \(pathDatabase)")
+        
+        if sqlite3_open_v2(pathDatabase.cStringUsingEncoding(NSUTF8StringEncoding)!,
+            &DataAccess.access.dataAccess, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), nil) != SQLITE_OK {
+                DataAccess.access.dataAccess = nil
+                
+                println("creation failed")
+                return false
+        }
+        println("creation ok !!")
         return true
     }
     
@@ -70,7 +88,8 @@ class Camembert {
             
             (currentObject as CamembertModel).setId(Int(sqlite3_column_int(ptrRequest, 0)))
             for var index = 1; index < Int(sqlite3_column_count(ptrRequest)); index++ {
-                let columName :String = NSString(CString: sqlite3_column_name(ptrRequest, CInt(index)), encoding: NSUTF8StringEncoding)!
+                let columName :String = NSString(CString: sqlite3_column_name(ptrRequest,
+                    CInt(index)), encoding: NSUTF8StringEncoding)!
                 
                 switch sqlite3_column_type(ptrRequest, CInt(index)) {
                 case SQLITE_INTEGER:
