@@ -126,7 +126,7 @@ println("number books : \(numberElement)")
 <h4 align="center">Get list of elements in a table</h4>
 
 For select elements in the tables, you need to perform a request.
-For doing this easily you can use the menu Select.
+For doing this easily you can use the enum Select.
 
 ```Swift
 enum Select {
