@@ -155,6 +155,14 @@ for currentElement in Book.select(selectRequest: Select.CustomRequest("SELECT * 
 }
 ```
 
+<h4 align="center">Get list of table</h4>
+
+You get an array of all tables present in your database:
+
+```Swift
+let listTable = Camembert.getListTable()
+```
+
 To get an accurate list of elements in a table, you must provide a Select request. Above all, the **class model**, which is used to create objects automatically. You absolutely have a **class** corespondant to your table, as in the examples above.
 
 The objects list, is **universal** (AnyObject), but all objects are created from your class.
