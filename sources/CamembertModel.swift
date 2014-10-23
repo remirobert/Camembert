@@ -233,33 +233,38 @@ class CamembertModel :NSObject {
         sqlite3_finalize(ptrRequest);
     }
     
-    class func select(selectRequest select: Select, classModel: AnyClass) -> [AnyObject] {
+    class func getRawClassName() -> String? {
+        let name = NSStringFromClass(self)
+        let components = name.componentsSeparatedByString(".")
+        return components.last
+    }
+    
+    class func select(selectRequest select: Select) -> [AnyObject] {
         let camembert = Camembert()
-        let table = (NSString(CString: object_getClassName(classModel),
-            encoding: NSUTF8StringEncoding) as String).componentsSeparatedByString(".")[1]
+        let table = getRawClassName()
         var requestSelect: String? = nil
         
         switch select {
         case .SelectAll:
-            requestSelect = "SELECT * FROM \(table)"
+            requestSelect = "SELECT * FROM \(table!)"
         case .Limit(let value):
-            requestSelect = "SELECT * FROM \(table) LIMIT \(value)"
+            requestSelect = "SELECT * FROM \(table!) LIMIT \(value)"
         case .Between(let startValue, let endValue):
-            requestSelect = "SELECT * FROM \(table) WHERE ID BETWEEN \(startValue) AND \(endValue)"
+            requestSelect = "SELECT * FROM \(table!) WHERE ID BETWEEN \(startValue) AND \(endValue)"
         case .CustomRequest(let request):
             requestSelect = request
         }
-        if let ret = camembert.getObjectsWithQuery(requestSelect!, table: table) {
+        CamembertModel.openConnection()
+        if let ret = camembert.getObjectsWithQuery(requestSelect!, table: table!) {
             return ret
         }
         return []
     }
     
-    class func removeTable(classModel: AnyClass) {
+    class func removeTable() {
         CamembertModel.openConnection()
-        let table = (NSString(CString: object_getClassName(classModel),
-            encoding: NSUTF8StringEncoding) as String).componentsSeparatedByString(".")[1]
-        let requestRemove :String = "DROP TABLE IF EXISTS \(table);"
+        let table = getRawClassName()
+        let requestRemove :String = "DROP TABLE IF EXISTS \(table!);"
         
         camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
             requestRemove.cStringUsingEncoding(NSUTF8StringEncoding)!)
