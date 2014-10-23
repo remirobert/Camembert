@@ -145,18 +145,16 @@ enum Select {
 
 ```Swift
 //display titles of the library
-for currentElement in Book.select(selectRequest: Select.SelectAll, classModel: Book.self) {
+for currentElement in Book.select(selectRequest: Select.SelectAll) {
   println("current Book's title: \((currentElement as Book).title)")
 }
 
 //reset currentPage
-for currentElement in Book.select(selectRequest: Select.CustomRequest("SELECT * FROM Book WHERE currentPage > 0"), classModel: Book.self) {
+for currentElement in Book.select(selectRequest: Select.CustomRequest("SELECT * FROM Book WHERE currentPage > 0")) {
   (currentElement as Book).currentPage = 0
   (currentElement as Book).update()
 }
 ```
-
-To get an accurate list of elements in a table, you must provide a Select request. Above all, the **class model**, which is used to create objects automatically. You absolutely have a **class** corespondant to your table, as in the examples above.
 
 The objects list, is **universal** (AnyObject), but all objects are created from your class.
 
