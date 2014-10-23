@@ -16,10 +16,11 @@ If it is already set, import Camembert.
 
 If you need to add one, follow these instructions:
 
+- Create a new header file.
 - Go into the **settings** of your project in the category **build setting**.
 - Search **Objective-C Bridging Header** with the search bar.
-- Add the following line : **${YOURPROJ}Bridging-Header.h**
-- Then copy the **Bridging-header.h** file, in your project.
+- Add the following line : **headerFileName.h**
+- Then import ```Objective-C#import "Camembert.h"``` in your header file.
 
 When the Bridging Header is created, simply copy the files *.m and *.swift from the directory sources.
 
@@ -28,6 +29,7 @@ When the Bridging Header is created, simply copy the files *.m and *.swift from 
 
 First thing to do, is to initialise your sqlite3 database.
 To do this you must make two calls before any other use.
+It will create for you the database in the document directory, if it don't exist yet.
 
 ```Swift
 Camembert.initDataBase("dataBase.sql")
@@ -47,7 +49,7 @@ typealias REAL = Float
 typealias TEXT = String
 ```
 
-This is a example of my table Book:
+This is a example of a table Book:
 
 ```Objective-C
 class Book :CamembertModel {
@@ -56,7 +58,7 @@ class Book :CamembertModel {
     var currentPage :INTEGER = 0
 }
 ```
-_The Book class corresponds to model, of my table Book in my database._
+_The Book class corresponds to model, and will be associated with the table Book in the database._
 
 
 <h4 align="center">Create a new element</h4>
@@ -125,28 +127,39 @@ println("number books : \(numberElement)")
 
 <h4 align="center">Get list of elements in a table</h4>
 
+For select elements in the tables, you need to perform a request.
+For doing this easily you can use the menu Select.
+
 ```Swift
-//display title of the library
-for currentElement :AnyObject in Camembert.getObjectsWithQuerry("SELECT * from Book;", table: "Book") {
-  println("current book : \((currentElement as Book).title)")
-}
-
-//reset currentPage
-var elements = Camembert.getObjectsWithQuerry("SELECT * from Book WHERE numberPage >= 100;", table: "Book")
-for currentElement in elements {
-  (currentElement as Book).currentPage = 0
-  (currentElement as Book).update()
-}
-
-//remove all element
-for currentElement :AnyObject in Camembert.getObjectsWithQuerry("SELECT * from Book;", table: "Book") {
-  (currentElement as Book).remove()
+enum Select {
+    case SelectAll
+    case CustomRequest(String)
+    case Limit(Int)
+    case Between(Int, Int)
 }
 ```
 
-To get an accurate list of elements in a table, you must provide a **SQL query**. Above all, the **name of the table**, which is used to create objects automatically. You absolutely have a **class** corespondant to your table, as in the examples above.
+  - SelectAll: will return all element in the table
+  - CustomRequest(String): You can use there your own SQL request
+  - Limit(Int): will return a limited number of element
+  - Between(Int, Int): will return all the element between the interval
 
-The objects list, is **universal** (AnyObject), but all objects are created from your class, so you can cast it.
+```Swift
+//display titles of the library
+for currentElement in Book.select(selectRequest: Select.SelectAll, classModel: Book.self) {
+  println("current Book's title: \((currentElement as Book).title)")
+}
+
+//reset currentPage
+for currentElement in Book.select(selectRequest: Select.CustomRequest("SELECT * FROM Book WHERE currentPage > 0"), classModel: Book.self) {
+  (currentElement as Book).currentPage = 0
+  (currentElement as Book).update()
+}
+```
+
+To get an accurate list of elements in a table, you must provide a Select request. Above all, the **class model**, which is used to create objects automatically. You absolutely have a **class** corespondant to your table, as in the examples above.
+
+The objects list, is **universal** (AnyObject), but all objects are created from your class.
 
 **_Camembert, will improve, here's the first version._**
 
