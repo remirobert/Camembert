@@ -156,7 +156,6 @@ for currentElement in Book.select(selectRequest: Select.CustomRequest("SELECT * 
 }
 ```
 
-The objects list, is **universal** (AnyObject), but all objects are created from your class.
 
 <h4 align="center">Get list of table</h4>
 
