@@ -24,6 +24,7 @@ If you need to add one, follow these instructions:
 
 When the Bridging Header is created, simply copy the files *.m and *.swift from the directory sources.
 
+<hr>
 
 <h1 align="center">Usage</h1>
 
@@ -155,6 +156,10 @@ for currentElement in Book.select(selectRequest: Select.CustomRequest("SELECT * 
 }
 ```
 
+To get an accurate list of elements in a table, you must provide a Select request. Above all, the **class model**, which is used to create objects automatically. You absolutely have a **class** corespondant to your table, as in the examples above.
+
+The objects list, is **universal** (AnyObject), but all objects are created from your class.
+
 <h4 align="center">Get list of table</h4>
 
 You get an array of all tables present in your database:
@@ -162,10 +167,7 @@ You get an array of all tables present in your database:
 ```Swift
 let listTable = Camembert.getListTable()
 ```
-
-To get an accurate list of elements in a table, you must provide a Select request. Above all, the **class model**, which is used to create objects automatically. You absolutely have a **class** corespondant to your table, as in the examples above.
-
-The objects list, is **universal** (AnyObject), but all objects are created from your class.
+<hr>
 
 **_Camembert, will improve, here's the first version._**
 
