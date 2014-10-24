@@ -29,15 +29,15 @@ When the Bridging Header is created, simply copy the files *.m and *.swift from 
 <h1 align="center">Usage</h1>
 
 First thing to do, is to initialise your sqlite3 database.
-To do this you must make two calls before any other use.
-It will create for you the database in the document directory, if it don't exist yet.
+To do this you must make a call before any other use.
+The database will be created automatically if it does not exist
 
 ```Swift
 Camembert.initDataBase("dataBase.sql")
 ```
 And **voila !**, you are ready to use Camembert.
 
-You need now to create a class, that corespond to your table.
+You need now to create a class, matching with your table.
 For doing that, you **MUST** inherit of **CamembertModel** class.
 And use the **typealias** for create your rows.
 You have to provide defaults values.
@@ -48,7 +48,7 @@ typealias REAL = Float
 typealias TEXT = String
 ```
 
-This is a example of a table Book:
+This is an example of a table Book:
 
 ```Objective-C
 class Book :CamembertModel {
