@@ -95,8 +95,8 @@ class Camembert {
                     currentObject.setValue((Int(sqlite3_column_int(ptrRequest,
                         CInt(index))) as AnyObject), forKey: columName)
                 case SQLITE_FLOAT:
-                    currentObject.setValue((Float(sqlite3_column_int(ptrRequest,
-                        CInt(index))) as AnyObject), forKey: columName)
+                    currentObject.setValue((Float(sqlite3_column_double(ptrRequest,
+                        CFloat(index))) as AnyObject), forKey: columName)
                 case SQLITE_TEXT:
                     var stringValue = String.fromCString(UnsafePointer<CChar>(sqlite3_column_text(ptrRequest, CInt(index))))
                     currentObject.setValue(stringValue, forKey: columName)
