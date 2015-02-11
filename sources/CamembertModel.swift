@@ -19,12 +19,20 @@ class CamembertModel :NSObject {
     
     private class func openConnection() {
         Camembert.closeDataBase()
-        Camembert.initDataBase(DataAccess.access.nameDataBase!)
+        if let dbFolder = DataAccess.access.DbPath {
+            Camembert.initDataBase(dbFolder, nameDatabase: DataAccess.access.nameDataBase!)
+        }else{
+            Camembert.initDataBase(DataAccess.access.nameDataBase!)
+        }
     }
     
-    func push() {
+    enum OperationResult{
+        case Success, Error_DuplicatedID, Error_NoRecordFoundWithID, Error_GeneralFailure
+    }
+    
+    func push() -> OperationResult{
         if self.id != nil {
-            return Void()
+            return OperationResult.Error_DuplicatedID
         }
         CamembertModel.openConnection()
         var requestPush = "INSERT INTO " + self.nameTable + " ("
@@ -49,14 +57,19 @@ class CamembertModel :NSObject {
             default: requestPush += ", "
             }
         }
-        camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
+        let result = camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
             requestPush.cStringUsingEncoding(NSUTF8StringEncoding)!)
         self.id = Int(sqlite3_last_insert_rowid(DataAccess.access.dataAccess))
+        var opResult: OperationResult = OperationResult.Success
+        if !result{
+            opResult = OperationResult.Error_GeneralFailure
+        }
+        return opResult
     }
     
-    func update() {
+    func update() -> OperationResult{
         if self.id == -1 {
-            return Void()
+            return OperationResult.Error_NoRecordFoundWithID
         }
         CamembertModel.openConnection()
         var requestUpdate :String = "UPDATE \(self.nameTable) SET "
@@ -74,20 +87,29 @@ class CamembertModel :NSObject {
             default: requestUpdate += ", "
             }
         }        
-        camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
+        let result = camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
             requestUpdate.cStringUsingEncoding(NSUTF8StringEncoding)!)
+        var opResult = OperationResult.Success
+        if !result{
+            opResult = OperationResult.Error_GeneralFailure
+        }
+        return opResult;
     }
     
-    func remove() {
+    func remove() -> OperationResult {
         if self.id == nil {
-            return Void()
+            return OperationResult.Error_NoRecordFoundWithID;
         }
         CamembertModel.openConnection()
         var requestDelete :String = "DELETE FROM \(self.nameTable) WHERE id=\(self.id!)"
         
-        camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
+        let result = camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
             requestDelete.cStringUsingEncoding(NSUTF8StringEncoding)!)
         self.id = -1
+        if !result{
+            return OperationResult.Error_GeneralFailure
+        }
+        return OperationResult.Success
     }
     
     func getSchemaTable() -> [String]! {
