@@ -19,7 +19,11 @@ class CamembertModel :NSObject {
     
     private class func openConnection() {
         Camembert.closeDataBase()
-        Camembert.initDataBase(DataAccess.access.nameDataBase!)
+        if let dbFolder = DataAccess.access.DbPath {
+            Camembert.initDataBase(dbFolder, nameDatabase: DataAccess.access.nameDataBase!)
+        }else{
+            Camembert.initDataBase(DataAccess.access.nameDataBase!)
+        }
     }
     
     enum OperationResult{

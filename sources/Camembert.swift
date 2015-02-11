@@ -22,7 +22,20 @@ enum Select {
 class DataAccess {
     var dataAccess :COpaquePointer = nil
     var nameDataBase: String? = nil
-    
+    private var _dbpath: String? = nil;
+    var DbPath: String? {
+        get{
+            return self._dbpath!;
+        }
+        set (value){
+            var isDir = ObjCBool(true)
+            if !NSFileManager.defaultManager().fileExistsAtPath(value!, isDirectory: &isDir){
+                NSFileManager.defaultManager().createDirectoryAtPath(value!, withIntermediateDirectories: true, attributes: nil, error: nil)
+            }
+            self._dbpath = value;
+        }
+    }
+
     class var access :DataAccess {
     struct Static {
         static let instance : DataAccess = DataAccess()
@@ -47,6 +60,18 @@ class Camembert {
         DataAccess.access.nameDataBase = nameDatabase
         return true
     }
+    
+    class func initDataBase(databaseFolder: String, nameDatabase :String) -> Bool{
+        DataAccess.access.DbPath = databaseFolder;
+        
+        let ret = sqlite3_open(databaseFolder.cStringUsingEncoding(NSUTF8StringEncoding)!,
+            &DataAccess.access.dataAccess)
+        if ret != SQLITE_OK {
+            return createDataBase(databaseFolder, nameDatabase: nameDatabase)
+        }
+        DataAccess.access.nameDataBase = nameDatabase
+        return true;
+    }
 
     class func createDataBase(nameDatabase: String) -> Bool {
         let documentDirectory :String = NSSearchPathForDirectoriesInDomains(
@@ -57,6 +82,21 @@ class Camembert {
         if sqlite3_open_v2(pathDatabase.cStringUsingEncoding(NSUTF8StringEncoding)!,
             &DataAccess.access.dataAccess, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), nil) != SQLITE_OK {
 
+                DataAccess.access.dataAccess = nil
+                return false
+        }
+        DataAccess.access.nameDataBase = nameDatabase
+        return true
+    }
+    
+    class func createDataBase(databaseFolder: String, nameDatabase: String) -> Bool {
+        if DataAccess.access.DbPath == nil {
+            DataAccess.access.DbPath = databaseFolder;
+        }
+        
+        if sqlite3_open_v2((databaseFolder + "/" + nameDatabase).cStringUsingEncoding(NSUTF8StringEncoding)!,
+            &DataAccess.access.dataAccess, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), nil) != SQLITE_OK {
+                
                 DataAccess.access.dataAccess = nil
                 return false
         }
