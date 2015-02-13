@@ -17,6 +17,8 @@ class CamembertModel :NSObject {
         self.id = id
     }
     
+    
+    
     private class func openConnection() {
         Camembert.closeDataBase()
         if let dbFolder = DataAccess.access.DbPath {
@@ -32,11 +34,11 @@ class CamembertModel :NSObject {
     
     func push() -> OperationResult{
         if self.id != nil {
-            return OperationResult.Error_DuplicatedID
+            return OperationResult.Error_DuplicatedID;
         }
         CamembertModel.openConnection()
         var requestPush = "INSERT INTO " + self.nameTable + " ("
-
+        
         for var index = 1; index < reflect(self).count; index++ {
             switch index {
             case reflect(self).count - 1 : requestPush += reflect(self)[index].0 + ")"
@@ -49,6 +51,20 @@ class CamembertModel :NSObject {
             
             switch currentValue {
             case let v where (currentValue as? TEXT != nil): requestPush += "\"\(currentValue)\""
+            case let v where (currentValue as? DATE_TIME != nil):
+                let dateformatter = NSDateFormatter();
+                dateformatter.dateFormat = "yyyy'-'MM'-'dd hh':'mm':'ss'";
+                let date = (currentValue as NSDate)
+                let result = dateformatter.dateFromString("\(date)")
+                requestPush += "\"\(date)\""
+                break;
+            case let v where (currentValue as? BIT != nil):
+                if (currentValue as Bool){
+                    requestPush += "1";
+                }else{
+                    requestPush += "0";
+                }
+                break;
             default: requestPush += "\(currentValue)"
             }
             
@@ -67,7 +83,7 @@ class CamembertModel :NSObject {
         return opResult
     }
     
-    func update() -> OperationResult{
+    func update() -> OperationResult {
         if self.id == -1 {
             return OperationResult.Error_NoRecordFoundWithID
         }
@@ -79,6 +95,17 @@ class CamembertModel :NSObject {
             
             switch currentValue {
             case let v where (currentValue as? TEXT != nil): requestUpdate += "\(reflect(self)[index].0) = \"\(currentValue)\""
+            case let v where (currentValue as? DATE_TIME != nil):
+                let dateformatter = NSDateFormatter();
+                dateformatter.dateFormat = Camembert.Date_Time_Format;
+                let date = (currentValue as NSDate)
+                let result = dateformatter.dateFromString("\(date)")
+                requestUpdate += "\(reflect(self)[index].0) = \"\(result)\""
+                break;
+                
+            case let v where (currentValue as? BIT != nil):
+                let result = (currentValue as Bool) ? "1" : "0";
+                requestUpdate += "\(reflect(self)[index].0) = \"\(result)\""
             default: requestUpdate += "\(reflect(self)[index].0) = \(currentValue)"
             }
             
@@ -86,7 +113,7 @@ class CamembertModel :NSObject {
             case reflect(self).count - 1: requestUpdate += " WHERE id = \(self.id!);"
             default: requestUpdate += ", "
             }
-        }        
+        }
         let result = camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
             requestUpdate.cStringUsingEncoding(NSUTF8StringEncoding)!)
         var opResult = OperationResult.Success
@@ -96,7 +123,7 @@ class CamembertModel :NSObject {
         return opResult;
     }
     
-    func remove() -> OperationResult {
+    func remove() -> OperationResult{
         if self.id == nil {
             return OperationResult.Error_NoRecordFoundWithID;
         }
@@ -114,29 +141,33 @@ class CamembertModel :NSObject {
     
     func getSchemaTable() -> [String]! {
         CamembertModel.openConnection()
-
-        var arraySirng :[String] = []
+        
+        var arrayString :[String] = []
         
         for var index = 1; index < reflect(self).count; index++ {
             let reflectionClass = reflect(self)[index]
             let currentValue = reflectionClass.1.value
-
+            
             switch currentValue {
             case let v where (currentValue as? INTEGER != nil):
-                arraySirng.append("\(reflectionClass.0) INTEGER")
+                arrayString.append("\(reflectionClass.0) INTEGER")
             case let v where (currentValue as? REAL != nil):
-                arraySirng.append("\(reflectionClass.0) REAL")
+                arrayString.append("\(reflectionClass.0) REAL")
             case let v where (currentValue as? TEXT != nil):
-                arraySirng.append("\(reflectionClass.0) TEXT")
+                arrayString.append("\(reflectionClass.0) TEXT")
+            case let v where (currentValue as? DATE_TIME != nil):
+                arrayString.append("\(reflectionClass.0) TEXT")
+            case let v where (currentValue as? BIT != nil):
+                arrayString.append("\(reflectionClass.0) INTEGER")
             default: return nil
             }
         }
-        return arraySirng
+        return arrayString
     }
     
     func isTableExist() -> Bool {
         CamembertModel.openConnection()
-
+        
         for currentTable in Camembert.getListTable() {
             if currentTable == self.nameTable {
                 return true
@@ -159,18 +190,18 @@ class CamembertModel :NSObject {
     
     func _initNameTable() {
         CamembertModel.openConnection()
-
+        
         var tmpNameTable = NSString(CString: object_getClassName(self), encoding: NSUTF8StringEncoding) as String
         self.nameTable = CamembertModel.getNameTable(&tmpNameTable).componentsSeparatedByString(".")[1]
     }
     
     func sendRequest(inout ptrRequest :COpaquePointer, request :String) -> Bool {
         CamembertModel.openConnection()
-
+        
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
             request.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
-            sqlite3_finalize(ptrRequest);
-            return false
+                sqlite3_finalize(ptrRequest);
+                return false
         }
         sqlite3_finalize(ptrRequest);
         return true
@@ -178,7 +209,7 @@ class CamembertModel :NSObject {
     
     func createTable() -> Bool {
         CamembertModel.openConnection()
-
+        
         if self.isTableExist() == false {
             var requestCreateTable :String = "CREATE TABLE " + self.nameTable + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
             if let configurationTable = self.getSchemaTable() {
@@ -199,7 +230,7 @@ class CamembertModel :NSObject {
     
     class func numberElement() -> Int {
         CamembertModel.openConnection()
-
+        
         var tmpNameTable = NSString(CString: class_getName(self), encoding: NSUTF8StringEncoding) as String
         tmpNameTable = tmpNameTable.componentsSeparatedByString(".")[1]
         var requestNumberlement :String = "SELECT COUNT(*) FROM \(CamembertModel.getNameTable(&tmpNameTable));"
@@ -207,8 +238,8 @@ class CamembertModel :NSObject {
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
             requestNumberlement.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
-            sqlite3_finalize(ptrRequest);
-            return 0
+                sqlite3_finalize(ptrRequest);
+                return 0
         }
         if sqlite3_step(ptrRequest) == SQLITE_ROW {
             let number = Int(sqlite3_column_int(ptrRequest, 0))
@@ -220,16 +251,16 @@ class CamembertModel :NSObject {
     
     func _initWithId(id :Int) {
         CamembertModel.openConnection()
-
+        
         var requestInit :String = "SELECT * FROM \(self.nameTable) WHERE id=\(id);"
         var ptrRequest :COpaquePointer = nil
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
             requestInit.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
-            sqlite3_finalize(ptrRequest);
-            return Void()
+                sqlite3_finalize(ptrRequest);
+                return Void()
         }
-
+        
         if sqlite3_step(ptrRequest) == SQLITE_ROW {
             for var index = 0; index < reflect(self).count; index++ {
                 if index == 0 {
@@ -245,7 +276,7 @@ class CamembertModel :NSObject {
                         self.setValue((Float(sqlite3_column_double(ptrRequest, CInt(index))) as AnyObject),
                             forKey: reflect(self)[index].0)
                     case SQLITE_TEXT:
-                        var stringValue = String.fromCString(UnsafePointer<CChar>(sqlite3_column_text(ptrRequest, CInt(index))))                        
+                        var stringValue = String.fromCString(UnsafePointer<CChar>(sqlite3_column_text(ptrRequest, CInt(index))))
                         self.setValue((String(stringValue!) as AnyObject), forKey: reflect(self)[index].0)
                     default: Void()
                     }
@@ -293,7 +324,7 @@ class CamembertModel :NSObject {
     }
     
     override init() {
-        super.init()        
+        super.init()
         self._initNameTable()
         self.createTable()
     }
