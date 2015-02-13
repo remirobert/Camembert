@@ -11,6 +11,8 @@ import Foundation
 typealias INTEGER = Int
 typealias REAL = Float
 typealias TEXT = String
+typealias DATE_TIME = NSDate
+typealias BIT = Bool
 
 enum Select {
     case SelectAll
@@ -45,6 +47,13 @@ class DataAccess {
 }
 
 class Camembert {
+    class var Date_Time_Format:String {
+        get
+        {
+            return "yyyy'-'MM'-'dd hh':'mm':'ss'";
+        }
+    }
+    
     class func initDataBase(nameDatabase :String) -> Bool {
         let documentDirectory :String = NSSearchPathForDirectoriesInDomains(
             .DocumentDirectory, .UserDomainMask, true)[0] as String
