@@ -14,11 +14,21 @@ typealias TEXT = String
 typealias DATE_TIME = NSDate
 typealias BIT = Bool
 
+
+enum Operator {
+    case LargerThan, LargerOrEqual, SmallerThan,SmallerOrEqual, EqualsTo, IsNull, NotNull
+}
+
+enum OrderOperator{
+    case Ascending, Descending
+}
+
 enum Select {
-    case SelectAll
+    case SelectAll(OrderOperator, String)
     case CustomRequest(String)
-    case Limit(Int)
-    case Between(Int, Int)
+    case Limit(Int, OrderOperator, String)
+    case Between(Int, Int, OrderOperator, String)
+    case Where(String, Operator, AnyObject, OrderOperator, String)
 }
 
 class DataAccess {

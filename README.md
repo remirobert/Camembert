@@ -46,6 +46,8 @@ You have to provide defaults values.
 typealias INTEGER = Int
 typealias REAL = Float
 typealias TEXT = String
+typealias DATE_TIME = NSDate
+typealias BIT = Bool
 ```
 
 This is an example of a table Book:
@@ -131,22 +133,31 @@ For doing this easily you can use the enum Select.
 
 ```Swift
 enum Select {
-    case SelectAll
+    case SelectAll(OrderOperator, String)
     case CustomRequest(String)
-    case Limit(Int)
-    case Between(Int, Int)
+    case Limit(Int, OrderOperator, String)
+    case Between(Int, Int, OrderOperator, String)
+    case Where(String, Operator, AnyObject, OrderOperator, String)
 }
 ```
 
-  - SelectAll: will return all element in the table
+  - SelectAll(OrderOperator, String): will return all element in the table
   - CustomRequest(String): You can use there your own SQL request
-  - Limit(Int): will return a limited number of element
-  - Between(Int, Int): will return all the element between the interval
+  - Limit(Int, OrderOperator, String): will return a limited number of element
+  - Between(Int, Int, OrderOperator, String): will return all the element between the interval
+  - Where (ColumnName: String, Operator: Larger,equal..etc, Value, OrderOperator, ColumnToOrderBy): will return elements that value of Column specified matches the passed value ("Value")
+
+```Swift
+//display titles of the library (if order by is empty like in example below, order will be done on id column)
+for currentElement in Book.select(selectRequest: Select.SelectAll, order: OrderOperator.Ascending, orderby: "") {
+  println("current Book's title: \((currentElement as Book).title)")
+}
+
 
 ```Swift
 //display titles of the library
-for currentElement in Book.select(selectRequest: Select.SelectAll) {
-  println("current Book's title: \((currentElement as Book).title)")
+for currentElement in Book.select(selectRequest: Select.SelectAll, OrderOperator.Ascending, "") {
+println("current Book's title: \((currentElement as Book).title)")
 }
 
 //reset currentPage
@@ -154,6 +165,33 @@ for currentElement in Book.select(selectRequest: Select.CustomRequest("SELECT * 
   (currentElement as Book).currentPage = 0
   (currentElement as Book).update()
 }
+```
+
+
+```Swift
+//How To us extension methods:
+var myArray = Array<AnyObject>();
+if let m_array = UserModel.select(selectRequest: Select.Where("FirstName", Operator.EqualsTo, "Hello", OrderOperator.Ascending, "LastName")){
+    myArray = m_array.Take(10);
+}
+
+if let m_array = UserModel.select(selectRequest: Select.Where("FirstName", Operator.EqualsTo, "Hello", OrderOperator.Ascending, "")){
+let myUserModel = (m_array.FirstOrDefault() as UserModel);
+}
+
+if let m_array = UserModel.select(selectRequest: Select.Where("FirstName", Operator.EqualsTo, "Hello", OrderOperator.Ascending, "")){
+let myUserModel = (m_array.LastOrDefault() as UserModel);
+}
+
+if var m_array = UserModel.select(selectRequest: Select.Where("FirstName", Operator.EqualsTo, "Hello", OrderOperator.Ascending, "")){
+myArray = m_array.TakeRange(1, offset: 10);
+}
+
+if var m_array = UserModel.select(selectRequest: Select.Where("FirstName", Operator.EqualsTo, "Hello", OrderOperator.Ascending, "")){
+myArray = m_array.Union(Array())
+}
+
+let FirstName = (myArray as Array)[0].FirstName;
 ```
 
 
@@ -170,6 +208,8 @@ let listTable = Camembert.getListTable()
 
 <h1 align="center">Author</h1>
 Rémi ROBERT, remirobert33530@gmail.com
+<h1 align="center">Contributers List</h1>
+Omar Bizreh, omar.bizreh@outlook.com
 
 <h1 align="center">Licence</h1>
 Camembert is available under the MIT license. See the LICENSE file for more info.

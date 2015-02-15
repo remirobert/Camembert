@@ -9,7 +9,7 @@
 #ifndef CamemberDebug_Camembert_h
 #define CamemberDebug_Camembert_h
 
-#import <UIKit/UIKit.h>
+
 #import <Foundation/Foundation.h>
 #import "sqlite3.h"
 #import <objc/runtime.h>
