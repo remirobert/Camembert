@@ -292,26 +292,139 @@ class CamembertModel :NSObject {
         return components.last
     }
     
-    class func select(selectRequest select: Select) -> [AnyObject] {
+    class func select(selectRequest select: Select) -> [AnyObject]? {
         let camembert = Camembert()
         let table = getRawClassName()
         var requestSelect: String? = nil
+        var m_OrderBy = "1";
         
         switch select {
-        case .SelectAll:
-            requestSelect = "SELECT * FROM \(table!)"
-        case .Limit(let value):
-            requestSelect = "SELECT * FROM \(table!) LIMIT \(value)"
-        case .Between(let startValue, let endValue):
-            requestSelect = "SELECT * FROM \(table!) WHERE ID BETWEEN \(startValue) AND \(endValue)"
+        case .SelectAll(let OrderOperator, let OrderBy):
+            var op: String;
+            if !OrderBy.isEmpty {
+                m_OrderBy = OrderBy
+            }
+            switch OrderOperator{
+            case .Ascending:
+                op = "asc"
+            default:
+                op = "desc"
+            }
+            requestSelect = "SELECT * FROM \(table!) order by \(m_OrderBy) \(op)"
+        case .Limit(let value, let OrderOperator, let OrderBy):
+            var op: String;
+            if !OrderBy.isEmpty {
+                m_OrderBy = OrderBy
+            }
+            switch OrderOperator{
+            case .Ascending:
+                op = "asc"
+            default:
+                op = "desc"
+            }
+            requestSelect = "SELECT * FROM \(table!) LIMIT \(value) order by \(m_OrderBy) \(op)"
+        case .Between(let startValue, let endValue, let OrderOperator, let OrderBy):
+            var op: String;
+            if !OrderBy.isEmpty {
+                m_OrderBy = OrderBy
+            }
+            switch OrderOperator{
+            case .Ascending:
+                op = "asc"
+            default:
+                op = "desc"
+            }
+            requestSelect = "SELECT * FROM \(table!) WHERE ID BETWEEN \(startValue) AND \(endValue) order by \(m_OrderBy) \(op)"
         case .CustomRequest(let request):
             requestSelect = request
+        case .Where(let Field, let Operator, var value, let OrderOperator, let OrderBy):
+            var op: String;
+            if !OrderBy.isEmpty {
+                m_OrderBy = OrderBy
+            }
+            switch OrderOperator{
+            case .Ascending:
+                op = "asc"
+            default:
+                op = "desc"
+            }
+            switch Operator{
+            case .EqualsTo:
+                var resultValue = String();
+                
+                if let x = value as? BIT{
+                    return nil
+                }else if let x = value as? TEXT {
+                    resultValue = "\"\(x)\""
+                }else if let x = value as? DATE_TIME{
+                    resultValue = "\"\(x)\""
+                }else{
+                    resultValue = "\(value)";
+                }
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) = \(resultValue) order by \(m_OrderBy) \(op)"
+            case .IsNull:
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL"
+                break;
+            case .LargerOrEqual:
+                var resultValue = String();
+                if let x = value as? BIT{
+                    return nil
+                }else if let x = value as? TEXT {
+                    resultValue = "\"\(x)\""
+                }else if let x = value as? DATE_TIME{
+                    resultValue = "\"\(x)\""
+                }else{
+                    resultValue = "\(value)";
+                }
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) >= \(resultValue) order by \(m_OrderBy) \(op)"
+            case .LargerThan:
+                var resultValue = String();
+                if let x = value as? BIT{
+                    return nil
+                }else if let x = value as? TEXT {
+                    resultValue = "\"\(x)\""
+                }else if let x = value as? DATE_TIME{
+                    resultValue = "\"\(x)\""
+                }else{
+                    resultValue = "\(value)";
+                }
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) > \(resultValue) order by \(m_OrderBy) \(op)"
+            case .NotNull:
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NOT NULL order by \(m_OrderBy) \(op)"
+            case .SmallerOrEqual:
+                var resultValue = String();
+                if let x = value as? BIT{
+                    return nil
+                }else if let x = value as? TEXT {
+                    resultValue = "\"\(x)\""
+                }else if let x = value as? DATE_TIME{
+                    resultValue = "\"\(x)\""
+                }else{
+                    resultValue = "\(value)";
+                }
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) <= \(resultValue) order by \(m_OrderBy) \(op)"
+            case .SmallerThan:
+                var resultValue = String();
+                if let x = value as? BIT{
+                    return nil
+                }else if let x = value as? TEXT {
+                    resultValue = "\"\(x)\""
+                }else if let x = value as? DATE_TIME{
+                    resultValue = "\"\(x)\""
+                }else{
+                    resultValue = "\(value)";
+                }
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) < \(resultValue) order by \(m_OrderBy) \(op)"
+            case .IsNull:
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL order by \(m_OrderBy) \(op)"
+            }
+            break;
         }
         CamembertModel.openConnection()
         if let ret = camembert.getObjectsWithQuery(requestSelect!, table: table!) {
             return ret
         }
-        return []
+        return nil
     }
     
     class func removeTable() {
