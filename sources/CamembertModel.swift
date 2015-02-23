@@ -310,7 +310,7 @@ class CamembertModel :NSObject {
             default:
                 op = "desc"
             }
-            requestSelect = "SELECT * FROM \(table!) order by \(m_OrderBy) \(op)"
+            requestSelect = "SELECT * FROM \(table!) ORDER BY \(m_OrderBy) \(op)"
         case .Limit(let value, let OrderOperator, let OrderBy):
             var op: String;
             if !OrderBy.isEmpty {
@@ -322,7 +322,7 @@ class CamembertModel :NSObject {
             default:
                 op = "desc"
             }
-            requestSelect = "SELECT * FROM \(table!) LIMIT \(value) order by \(m_OrderBy) \(op)"
+            requestSelect = "SELECT * FROM \(table!) LIMIT \(value) ORDER BY \(m_OrderBy) \(op)"
         case .Between(let startValue, let endValue, let OrderOperator, let OrderBy):
             var op: String;
             if !OrderBy.isEmpty {
@@ -334,7 +334,7 @@ class CamembertModel :NSObject {
             default:
                 op = "desc"
             }
-            requestSelect = "SELECT * FROM \(table!) WHERE ID BETWEEN \(startValue) AND \(endValue) order by \(m_OrderBy) \(op)"
+            requestSelect = "SELECT * FROM \(table!) WHERE ID BETWEEN \(startValue) AND \(endValue) ORDER BY \(m_OrderBy) \(op)"
         case .CustomRequest(let request):
             requestSelect = request
         case .Where(let Field, let Operator, var value, let OrderOperator, let OrderBy):
@@ -361,7 +361,7 @@ class CamembertModel :NSObject {
                 }else{
                     resultValue = "\(value)";
                 }
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) = \(resultValue) order by \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) = \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .IsNull:
                 requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL"
                 break;
@@ -376,7 +376,7 @@ class CamembertModel :NSObject {
                 }else{
                     resultValue = "\(value)";
                 }
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) >= \(resultValue) order by \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) >= \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .LargerThan:
                 var resultValue = String();
                 if let x = value as? BIT{
@@ -388,9 +388,9 @@ class CamembertModel :NSObject {
                 }else{
                     resultValue = "\(value)";
                 }
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) > \(resultValue) order by \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) > \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .NotNull:
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NOT NULL order by \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NOT NULL ORDER BY \(m_OrderBy) \(op)"
             case .SmallerOrEqual:
                 var resultValue = String();
                 if let x = value as? BIT{
@@ -402,7 +402,7 @@ class CamembertModel :NSObject {
                 }else{
                     resultValue = "\(value)";
                 }
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) <= \(resultValue) order by \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) <= \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .SmallerThan:
                 var resultValue = String();
                 if let x = value as? BIT{
@@ -414,9 +414,9 @@ class CamembertModel :NSObject {
                 }else{
                     resultValue = "\(value)";
                 }
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) < \(resultValue) order by \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) < \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .IsNull:
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL order by \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL ORDER BY \(m_OrderBy) \(op)"
             }
             break;
         }
