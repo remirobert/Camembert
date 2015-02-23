@@ -28,7 +28,7 @@ enum Select {
     case CustomRequest(String)
     case Limit(Int, OrderOperator, String)
     case Between(Int, Int, OrderOperator, String)
-    case Where(String, Operator, AnyObject, OrderOperator, String)
+    case Where(String, Operator, Any, OrderOperator, String)
 }
 
 class DataAccess {
@@ -37,7 +37,7 @@ class DataAccess {
     private var _dbpath: String? = nil;
     var DbPath: String? {
         get{
-            return self._dbpath!;
+            return self._dbpath;
         }
         set (value){
             var isDir = ObjCBool(true)
