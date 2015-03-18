@@ -53,7 +53,7 @@ class CamembertModel :NSObject {
             case let v where (currentValue as? TEXT != nil): requestPush += "\"\(currentValue)\""
             case let v where (currentValue as? DATE_TIME != nil):
                 let dateformatter = NSDateFormatter();
-                dateformatter.dateFormat = "yyyy'-'MM'-'dd hh':'mm':'ss'";
+                dateformatter.dateFormat = Camembert.Date_Time_Format;
                 let date = (currentValue as NSDate)
                 let result = dateformatter.dateFromString("\(date)")
                 requestPush += "\"\(date)\""
@@ -99,8 +99,7 @@ class CamembertModel :NSObject {
                 let dateformatter = NSDateFormatter();
                 dateformatter.dateFormat = Camembert.Date_Time_Format;
                 let date = (currentValue as NSDate)
-                let result = dateformatter.dateFromString("\(date)")
-                requestUpdate += "\(reflect(self)[index].0) = \"\(result)\""
+                requestUpdate += "\(reflect(self)[index].0) = \"\(date)\""
                 break;
                 
             case let v where (currentValue as? BIT != nil):
