@@ -41,7 +41,7 @@ class CamembertModel :NSObject {
         let lastIndex = children.endIndex
         var requestPush = "INSERT INTO " + self.nameTable + " ("
         
-        for var i in children.indices
+        for i in children.indices
         {
             if (i.successor() == lastIndex)
             {
@@ -55,21 +55,21 @@ class CamembertModel :NSObject {
         
         requestPush += " VALUES ("
         
-        for var i in children.indices
+        for i in children.indices
         {
             let currentValue = children[i].value
             
             switch currentValue
             {
-            case let v where (currentValue as? TEXT != nil): requestPush += "\"\(currentValue)\""
-            case let v where (currentValue as? DATE_TIME != nil):
+            case _ where (currentValue as? TEXT != nil): requestPush += "\"\(currentValue)\""
+            case _ where (currentValue as? DATE_TIME != nil):
                 let dateformatter = NSDateFormatter();
                 dateformatter.dateFormat = Camembert.Date_Time_Format;
                 let date = (currentValue as! NSDate)
-                let result = dateformatter.dateFromString("\(date)")
+                _ = dateformatter.dateFromString("\(date)")
                 requestPush += "\"\(date)\""
                 break;
-            case let v where (currentValue as? BIT != nil):
+            case _ where (currentValue as? BIT != nil):
                 if (currentValue as! Bool)
                 {
                     requestPush += "1";
@@ -121,15 +121,15 @@ class CamembertModel :NSObject {
             
             switch currentValue
             {
-            case let v where (currentValue as? TEXT != nil): requestUpdate += "\(children[i].label!) = \"\(currentValue)\""
-            case let v where (currentValue as? DATE_TIME != nil):
+            case _ where (currentValue as? TEXT != nil): requestUpdate += "\(children[i].label!) = \"\(currentValue)\""
+            case _ where (currentValue as? DATE_TIME != nil):
                 let dateformatter = NSDateFormatter();
                 dateformatter.dateFormat = Camembert.Date_Time_Format;
                 let date = (currentValue as! NSDate)
                 requestUpdate += "\(children[i].label!) = \"\(date)\""
                 break;
                 
-            case let v where (currentValue as? BIT != nil):
+            case _ where (currentValue as? BIT != nil):
                 let result = (currentValue as! Bool) ? "1" : "0";
                 requestUpdate += "\(children[i].label!) = \"\(result)\""
             default: requestUpdate += "\(children[i].label!) = \(currentValue)"
@@ -178,21 +178,21 @@ class CamembertModel :NSObject {
         let mirror = Mirror(reflecting: self)
         let children = mirror.children // .dropFirst()
         
-        for var i in children.indices
+        for i in children.indices
         {
             let currentValue = children[i].value
             
             switch currentValue
             {
-            case let v where (currentValue as? INTEGER != nil):
+            case _ where (currentValue as? INTEGER != nil):
                 arrayString.append("\(children[i].label!) INTEGER")
-            case let v where (currentValue as? REAL != nil):
+            case _ where (currentValue as? REAL != nil):
                 arrayString.append("\(children[i].label!) REAL")
-            case let v where (currentValue as? TEXT != nil):
+            case _ where (currentValue as? TEXT != nil):
                 arrayString.append("\(children[i].label!) TEXT")
-            case let v where (currentValue as? DATE_TIME != nil):
+            case _ where (currentValue as? DATE_TIME != nil):
                 arrayString.append("\(children[i].label!) TEXT")
-            case let v where (currentValue as? BIT != nil):
+            case _ where (currentValue as? BIT != nil):
                 arrayString.append("\(children[i].label!) INTEGER")
             default: return nil
             }
@@ -256,7 +256,7 @@ class CamembertModel :NSObject {
                     }
                 }
                 requestCreateTable += ");"
-                var request :COpaquePointer = nil
+//                let request :COpaquePointer = nil
                 camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
                     requestCreateTable.cStringUsingEncoding(NSUTF8StringEncoding)!)
             }
@@ -304,7 +304,7 @@ class CamembertModel :NSObject {
             let children = mirror.children
             let firstIndex = children.startIndex
             
-            for var i in children.indices
+            for i in children.indices
             {
                 if i == firstIndex
                 {
@@ -384,7 +384,7 @@ class CamembertModel :NSObject {
             requestSelect = "SELECT * FROM \(table!) WHERE ID BETWEEN \(startValue) AND \(endValue) ORDER BY \(m_OrderBy) \(op)"
         case .CustomRequest(let request):
             requestSelect = request
-        case .Where(let Field, let Operator, var value, let OrderOperator, let OrderBy):
+        case .Where(let Field, let Operator, let value, let OrderOperator, let OrderBy):
             var op: String;
             if !OrderBy.isEmpty {
                 m_OrderBy = OrderBy
@@ -399,7 +399,7 @@ class CamembertModel :NSObject {
             case .EqualsTo:
                 var resultValue = String();
                 
-                if let x = value as? BIT{
+                if let _ = value as? BIT{
                     return nil
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
@@ -414,7 +414,7 @@ class CamembertModel :NSObject {
                 break;
             case .LargerOrEqual:
                 var resultValue = String();
-                if let x = value as? BIT{
+                if let _ = value as? BIT{
                     return nil
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
@@ -426,7 +426,7 @@ class CamembertModel :NSObject {
                 requestSelect = "SELECT * FROM \(table!) WHERE \(Field) >= \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .LargerThan:
                 var resultValue = String();
-                if let x = value as? BIT{
+                if let _ = value as? BIT{
                     return nil
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
@@ -440,7 +440,7 @@ class CamembertModel :NSObject {
                 requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NOT NULL ORDER BY \(m_OrderBy) \(op)"
             case .SmallerOrEqual:
                 var resultValue = String();
-                if let x = value as? BIT{
+                if let _ = value as? BIT{
                     return nil
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
@@ -452,7 +452,7 @@ class CamembertModel :NSObject {
                 requestSelect = "SELECT * FROM \(table!) WHERE \(Field) <= \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .SmallerThan:
                 var resultValue = String();
-                if let x = value as? BIT{
+                if let _ = value as? BIT{
                     return nil
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
@@ -462,8 +462,8 @@ class CamembertModel :NSObject {
                     resultValue = "\(value)";
                 }
                 requestSelect = "SELECT * FROM \(table!) WHERE \(Field) < \(resultValue) ORDER BY \(m_OrderBy) \(op)"
-            case .IsNull:
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL ORDER BY \(m_OrderBy) \(op)"
+//            case .IsNull:
+//                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL ORDER BY \(m_OrderBy) \(op)"
             }
             break;
         }

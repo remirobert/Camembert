@@ -29,7 +29,7 @@ extension Array {
         return resultArray
     }
     
-    func FirstOrDefault() -> T?{
+    func FirstOrDefault() -> Element?{
         if self.count > 0 {
             return self[0]
         }else{
@@ -37,7 +37,7 @@ extension Array {
         }
     }
     
-    func LastOrDefault() -> T?{
+    func LastOrDefault() -> Element?{
         if self.count > 0{
             return self[self.count - 1]
         }else{
