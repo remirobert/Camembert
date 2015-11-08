@@ -42,7 +42,13 @@ class DataAccess {
         set (value){
             var isDir = ObjCBool(true)
             if !NSFileManager.defaultManager().fileExistsAtPath(value!, isDirectory: &isDir){
-                NSFileManager.defaultManager().createDirectoryAtPath(value!, withIntermediateDirectories: true, attributes: nil, error: nil)
+                do {
+                    try NSFileManager.defaultManager().createDirectoryAtPath(value!, withIntermediateDirectories: true, attributes: nil)
+                }
+                catch {
+                    print("DataAccess function raised an exception")
+                }
+                
             }
             self._dbpath = value;
         }
@@ -142,12 +148,12 @@ class Camembert {
                 return nil
         }
         while (sqlite3_step(ptrRequest) == SQLITE_ROW) {
-            var currentObject :AnyObject! = camembertCreateObject(table) as AnyObject
+            let currentObject :AnyObject! = camembertCreateObject(table) as AnyObject
             
-            (currentObject as CamembertModel).setId(Int(sqlite3_column_int(ptrRequest, 0)))
+            (currentObject as! CamembertModel).setId(Int(sqlite3_column_int(ptrRequest, 0)))
             for var index = 1; index < Int(sqlite3_column_count(ptrRequest)); index++ {
                 let columName :String = NSString(CString: sqlite3_column_name(ptrRequest,
-                    CInt(index)), encoding: NSUTF8StringEncoding)!
+                    CInt(index)), encoding: NSUTF8StringEncoding)! as String
                 
                 switch sqlite3_column_type(ptrRequest, CInt(index)) {
                 case SQLITE_INTEGER:
@@ -157,7 +163,7 @@ class Camembert {
                     currentObject.setValue((Float(sqlite3_column_double(ptrRequest,
                         CInt(index))) as AnyObject), forKey: columName)
                 case SQLITE_TEXT:
-                    var stringValue = String.fromCString(UnsafePointer<CChar>(sqlite3_column_text(ptrRequest, CInt(index))))
+                    let stringValue = String.fromCString(UnsafePointer<CChar>(sqlite3_column_text(ptrRequest, CInt(index))))
                     currentObject.setValue(stringValue, forKey: columName)
                 default: Void()
                 }
@@ -183,7 +189,7 @@ class Camembert {
     class func getListTable() -> [String] {
         var tables :[String] = []
         var ptrRequest :COpaquePointer = nil
-        var requestListTables :String = "SELECT name FROM sqlite_master WHERE type='table';"
+        let requestListTables :String = "SELECT name FROM sqlite_master WHERE type='table';"
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
             requestListTables.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {

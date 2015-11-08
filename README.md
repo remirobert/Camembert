@@ -16,6 +16,7 @@ If it is already set, import Camembert.
 
 If you need to add one, follow these instructions:
 
+- Add **libsqlite3.0.tbd** and **libsqlite3.tbd** under **Linked Frameworks and Libraries** in project settings.
 - Create a new header file.
 - Go into the **settings** of your project in the category **build setting**.
 - Search **Objective-C Bridging Header** with the search bar.
