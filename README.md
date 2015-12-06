@@ -3,6 +3,9 @@
   <h1 align="center">Camembert</h1>
 </p>
 
+
+**This framework is beging to rewritte, with a new API more safe and more reliable.**
+
 Camembert is a toolkit written in **swift**, for using sqlite3 easier. Is is available for **OSX** and **iOS**.
 </br>
 <h1 align="center">Installation</h1>
