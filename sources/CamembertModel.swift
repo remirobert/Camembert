@@ -299,34 +299,22 @@ class CamembertModel :NSObject {
         
         if sqlite3_step(ptrRequest) == SQLITE_ROW
         {
-            
-            let mirror = Mirror(reflecting: self)
-            let children = mirror.children
-            let firstIndex = children.startIndex
-            
-            for i in children.indices
-            {
-                if i == firstIndex
-                {
-                    self.id = Int(sqlite3_column_int(ptrRequest, 0))
-                }
-                else
-                {
-                    let index = Int(firstIndex.distanceTo(i).value)
-                    let currentTypeData = sqlite3_column_type(ptrRequest, CInt(index))
-                    switch currentTypeData
-                    {
-                    case SQLITE_INTEGER:
-                        self.setValue((Int(sqlite3_column_int(ptrRequest, CInt(index))) as AnyObject),
-                            forKey: children[i].label!)
-                    case SQLITE_FLOAT:
-                        self.setValue((Float(sqlite3_column_double(ptrRequest, CInt(index))) as AnyObject),
-                            forKey: children[i].label!)
-                    case SQLITE_TEXT:
-                        let stringValue = String.fromCString(UnsafePointer<CChar>(sqlite3_column_text(ptrRequest, CInt(index))))
-                        self.setValue((String(stringValue!) as AnyObject),                             forKey: children[i].label!)
-                    default: Void()
-                    }
+            self.setId(Int(sqlite3_column_int(ptrRequest, 0)))
+            for var index = 1; index < Int(sqlite3_column_count(ptrRequest)); index++ {
+                let columName :String = NSString(CString: sqlite3_column_name(ptrRequest,
+                    CInt(index)), encoding: NSUTF8StringEncoding)! as String
+                
+                switch sqlite3_column_type(ptrRequest, CInt(index)) {
+                case SQLITE_INTEGER:
+                    self.setValue((Int(sqlite3_column_int(ptrRequest,
+                        CInt(index))) as AnyObject), forKey: columName)
+                case SQLITE_FLOAT:
+                    self.setValue((Float(sqlite3_column_double(ptrRequest,
+                        CInt(index))) as AnyObject), forKey: columName)
+                case SQLITE_TEXT:
+                    let stringValue = String.fromCString(UnsafePointer<CChar>(sqlite3_column_text(ptrRequest, CInt(index))))
+                    self.setValue(stringValue, forKey: columName)
+                default: Void()
                 }
             }
         }
