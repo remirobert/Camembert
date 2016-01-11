@@ -3,12 +3,23 @@
 //  SwiftSQL
 //
 //  Created by Remi Robert on 20/08/14.
+//  Modified by Omar Bizreh on 11/1/16.
 //  Copyright (c) 2014 remirobert. All rights reserved.
 //
-
 import Foundation
+// Code from https://github.com/nerdyc/Squeal
+#if os(iOS)
+#if arch(i386) || arch(x86_64)
+    import sqlite3_ios_simulator
+    #else
+    import sqlite3_ios
+#endif
+#else
+    import sqlite3_osx
+#endif
+// End of code
 
-class CamembertModel :NSObject {
+@objc public class CamembertModel :NSObject {
     
     private var nameTable :String! = nil
     var id :Int? = nil
@@ -26,11 +37,11 @@ class CamembertModel :NSObject {
         }
     }
     
-    enum OperationResult{
+    public enum OperationResult{
         case Success, Error_DuplicatedID, Error_NoRecordFoundWithID, Error_GeneralFailure
     }
     
-    func push() -> OperationResult{
+    public func push() -> OperationResult{
         if self.id != nil {
             return OperationResult.Error_DuplicatedID;
         }
@@ -102,7 +113,7 @@ class CamembertModel :NSObject {
         return opResult
     }
     
-    func update() -> OperationResult
+    public func update() -> OperationResult
     {
         if self.id == -1
         {
@@ -154,7 +165,7 @@ class CamembertModel :NSObject {
         return opResult;
     }
     
-    func remove() -> OperationResult{
+    public func remove() -> OperationResult{
         if self.id == nil {
             return OperationResult.Error_NoRecordFoundWithID;
         }
@@ -170,7 +181,7 @@ class CamembertModel :NSObject {
         return OperationResult.Success
     }
     
-    func getSchemaTable() -> [String]! {
+    public func getSchemaTable() -> [String]! {
         CamembertModel.openConnection()
         
         var arrayString :[String] = []
@@ -201,7 +212,7 @@ class CamembertModel :NSObject {
         return arrayString
     }
     
-    func isTableExist() -> Bool {
+    public func isTableExist() -> Bool {
         CamembertModel.openConnection()
         
         for currentTable in Camembert.getListTable() {
@@ -212,7 +223,7 @@ class CamembertModel :NSObject {
         return false
     }
     
-    class func getNameTable(inout tmpNameTable :String) -> String {
+    public class func getNameTable(inout tmpNameTable :String) -> String {
         let parseString = "0123456789"
         
         for currentNumberParse in parseString.characters {
@@ -231,7 +242,7 @@ class CamembertModel :NSObject {
         self.nameTable = CamembertModel.getNameTable(&tmpNameTable).componentsSeparatedByString(".")[1]
     }
     
-    func sendRequest(inout ptrRequest :COpaquePointer, request :String) -> Bool {
+    public func sendRequest(inout ptrRequest :COpaquePointer, request :String) -> Bool {
         CamembertModel.openConnection()
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
@@ -243,7 +254,7 @@ class CamembertModel :NSObject {
         return true
     }
     
-    func createTable() -> Bool {
+    public func createTable() -> Bool {
         CamembertModel.openConnection()
         
         if self.isTableExist() == false {
@@ -256,7 +267,7 @@ class CamembertModel :NSObject {
                     }
                 }
                 requestCreateTable += ");"
-//                let request :COpaquePointer = nil
+                //                let request :COpaquePointer = nil
                 camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
                     requestCreateTable.cStringUsingEncoding(NSUTF8StringEncoding)!)
             }
@@ -264,7 +275,7 @@ class CamembertModel :NSObject {
         return true
     }
     
-    class func numberElement() -> Int {
+    public class func numberElement() -> Int {
         CamembertModel.openConnection()
         
         var tmpNameTable = NSString(CString: class_getName(self), encoding: NSUTF8StringEncoding) as! String
@@ -285,7 +296,7 @@ class CamembertModel :NSObject {
         return 0
     }
     
-    func _initWithId(id :Int) {
+    public func _initWithId(id :Int) {
         CamembertModel.openConnection()
         
         let requestInit :String = "SELECT * FROM \(self.nameTable) WHERE id=\(id);"
@@ -321,13 +332,13 @@ class CamembertModel :NSObject {
         sqlite3_finalize(ptrRequest);
     }
     
-    class func getRawClassName() -> String? {
+    public class func getRawClassName() -> String? {
         let name = NSStringFromClass(self)
         let components = name.componentsSeparatedByString(".")
         return components.last
     }
     
-    class func select(selectRequest select: Select) -> [AnyObject]? {
+    public  class func select(selectRequest select: Select) -> [AnyObject]? {
         let camembert = Camembert()
         let table = getRawClassName()
         var requestSelect: String? = nil
@@ -450,8 +461,8 @@ class CamembertModel :NSObject {
                     resultValue = "\(value)";
                 }
                 requestSelect = "SELECT * FROM \(table!) WHERE \(Field) < \(resultValue) ORDER BY \(m_OrderBy) \(op)"
-//            case .IsNull:
-//                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL ORDER BY \(m_OrderBy) \(op)"
+                //            case .IsNull:
+                //                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL ORDER BY \(m_OrderBy) \(op)"
             }
             break;
         }
@@ -462,7 +473,7 @@ class CamembertModel :NSObject {
         return nil
     }
     
-    class func removeTable() {
+    public class func removeTable() {
         CamembertModel.openConnection()
         let table = getRawClassName()
         let requestRemove :String = "DROP TABLE IF EXISTS \(table!);"
@@ -471,13 +482,13 @@ class CamembertModel :NSObject {
             requestRemove.cStringUsingEncoding(NSUTF8StringEncoding)!)
     }
     
-    override init() {
+    public override init() {
         super.init()
         self._initNameTable()
         self.createTable()
     }
     
-    init(id :Int) {
+    public init(id :Int) {
         super.init()
         self._initNameTable()
         self.createTable()
