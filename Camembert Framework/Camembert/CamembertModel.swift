@@ -18,7 +18,7 @@ import Foundation
     import sqlite3_osx
 #endif
 // End of code
-    
+
 @objc public class CamembertModel :NSObject {
     
     private var nameTable :String! = nil
@@ -37,11 +37,11 @@ import Foundation
         }
     }
     
-    enum OperationResult{
+    public enum OperationResult{
         case Success, Error_DuplicatedID, Error_NoRecordFoundWithID, Error_GeneralFailure
     }
     
-    func push() -> OperationResult{
+    public func push() -> OperationResult{
         if self.id != nil {
             return OperationResult.Error_DuplicatedID;
         }
@@ -113,7 +113,7 @@ import Foundation
         return opResult
     }
     
-    func update() -> OperationResult
+    public func update() -> OperationResult
     {
         if self.id == -1
         {
@@ -165,7 +165,7 @@ import Foundation
         return opResult;
     }
     
-    func remove() -> OperationResult{
+    public func remove() -> OperationResult{
         if self.id == nil {
             return OperationResult.Error_NoRecordFoundWithID;
         }
@@ -181,7 +181,7 @@ import Foundation
         return OperationResult.Success
     }
     
-    func getSchemaTable() -> [String]! {
+    public func getSchemaTable() -> [String]! {
         CamembertModel.openConnection()
         
         var arrayString :[String] = []
@@ -212,7 +212,7 @@ import Foundation
         return arrayString
     }
     
-    func isTableExist() -> Bool {
+    public func isTableExist() -> Bool {
         CamembertModel.openConnection()
         
         for currentTable in Camembert.getListTable() {
@@ -223,7 +223,7 @@ import Foundation
         return false
     }
     
-    class func getNameTable(inout tmpNameTable :String) -> String {
+    public class func getNameTable(inout tmpNameTable :String) -> String {
         let parseString = "0123456789"
         
         for currentNumberParse in parseString.characters {
@@ -242,7 +242,7 @@ import Foundation
         self.nameTable = CamembertModel.getNameTable(&tmpNameTable).componentsSeparatedByString(".")[1]
     }
     
-    func sendRequest(inout ptrRequest :COpaquePointer, request :String) -> Bool {
+    public func sendRequest(inout ptrRequest :COpaquePointer, request :String) -> Bool {
         CamembertModel.openConnection()
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
@@ -254,7 +254,7 @@ import Foundation
         return true
     }
     
-    func createTable() -> Bool {
+    public func createTable() -> Bool {
         CamembertModel.openConnection()
         
         if self.isTableExist() == false {
@@ -267,7 +267,7 @@ import Foundation
                     }
                 }
                 requestCreateTable += ");"
-//                let request :COpaquePointer = nil
+                //                let request :COpaquePointer = nil
                 camembertExecSqlite3(UnsafeMutablePointer<Void>(DataAccess.access.dataAccess),
                     requestCreateTable.cStringUsingEncoding(NSUTF8StringEncoding)!)
             }
@@ -275,7 +275,7 @@ import Foundation
         return true
     }
     
-    class func numberElement() -> Int {
+    public class func numberElement() -> Int {
         CamembertModel.openConnection()
         
         var tmpNameTable = NSString(CString: class_getName(self), encoding: NSUTF8StringEncoding) as! String
@@ -296,7 +296,7 @@ import Foundation
         return 0
     }
     
-    func _initWithId(id :Int) {
+    public func _initWithId(id :Int) {
         CamembertModel.openConnection()
         
         let requestInit :String = "SELECT * FROM \(self.nameTable) WHERE id=\(id);"
@@ -332,13 +332,13 @@ import Foundation
         sqlite3_finalize(ptrRequest);
     }
     
-    class func getRawClassName() -> String? {
+    public class func getRawClassName() -> String? {
         let name = NSStringFromClass(self)
         let components = name.componentsSeparatedByString(".")
         return components.last
     }
     
-    class func select(selectRequest select: Select) -> [AnyObject]? {
+    public  class func select(selectRequest select: Select) -> [AnyObject]? {
         let camembert = Camembert()
         let table = getRawClassName()
         var requestSelect: String? = nil
@@ -461,8 +461,8 @@ import Foundation
                     resultValue = "\(value)";
                 }
                 requestSelect = "SELECT * FROM \(table!) WHERE \(Field) < \(resultValue) ORDER BY \(m_OrderBy) \(op)"
-//            case .IsNull:
-//                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL ORDER BY \(m_OrderBy) \(op)"
+                //            case .IsNull:
+                //                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL ORDER BY \(m_OrderBy) \(op)"
             }
             break;
         }
@@ -473,7 +473,7 @@ import Foundation
         return nil
     }
     
-    class func removeTable() {
+    public class func removeTable() {
         CamembertModel.openConnection()
         let table = getRawClassName()
         let requestRemove :String = "DROP TABLE IF EXISTS \(table!);"
@@ -482,13 +482,13 @@ import Foundation
             requestRemove.cStringUsingEncoding(NSUTF8StringEncoding)!)
     }
     
-    override init() {
+    public override init() {
         super.init()
         self._initNameTable()
         self.createTable()
     }
     
-    init(id :Int) {
+    public init(id :Int) {
         super.init()
         self._initNameTable()
         self.createTable()
