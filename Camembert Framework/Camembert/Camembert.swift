@@ -4,27 +4,39 @@
 //  SwiftSQL
 //
 //  Created by Remi Robert on 28/08/14.
+//  Modified by Omar Bizreh on 11/1/16.
 //  Copyright (c) 2014 remirobert. All rights reserved.
 //
 
 import Foundation
+// Code from https://github.com/nerdyc/Squeal
+#if os(iOS)
+#if arch(i386) || arch(x86_64)
+    import sqlite3_ios_simulator
+    #else
+    import sqlite3_ios
+#endif
+#else
+    import sqlite3_osx
+#endif
+// End of code
 
-typealias INTEGER = Int
-typealias REAL = Float
-typealias TEXT = String
-typealias DATE_TIME = NSDate
-typealias BIT = Bool
+public typealias INTEGER = Int
+public typealias REAL = Float
+public typealias TEXT = String
+public typealias DATE_TIME = NSDate
+public typealias BIT = Bool
 
 
-enum Operator {
+public enum Operator {
     case LargerThan, LargerOrEqual, SmallerThan,SmallerOrEqual, EqualsTo, IsNull, NotNull
 }
 
-enum OrderOperator{
+public enum OrderOperator{
     case Ascending, Descending
 }
 
-enum Select {
+public enum Select {
     case SelectAll(OrderOperator, String)
     case CustomRequest(String)
     case Limit(Int, OrderOperator, String)
@@ -32,11 +44,11 @@ enum Select {
     case Where(String, Operator, Any, OrderOperator, String)
 }
 
-class DataAccess {
-    var dataAccess :COpaquePointer = nil
-    var nameDataBase: String? = nil
+@objc public class DataAccess : NSObject {
+    public var dataAccess :COpaquePointer = nil
+    public var nameDataBase: String? = nil
     private var _dbpath: String? = nil;
-    var DbPath: String? {
+    public var DbPath: String? {
         get{
             return self._dbpath;
         }
@@ -54,24 +66,24 @@ class DataAccess {
             self._dbpath = value;
         }
     }
-
-    class var access :DataAccess {
-    struct Static {
-        static let instance : DataAccess = DataAccess()
+    
+    public class var access :DataAccess {
+        struct Static {
+            static let instance : DataAccess = DataAccess()
         }
         return Static.instance
     }
 }
 
-class Camembert {
+@objc public class Camembert : NSObject{
     class var Date_Time_Format:String {
         get
-        {
-            return "yyyy'-'MM'-'dd hh':'mm':'ss'";
+    {
+        return "yyyy'-'MM'-'dd hh':'mm':'ss'";
         }
     }
     
-    class func initDataBase(nameDatabase :String) -> Bool {
+    public class func initDataBase(nameDatabase :String) -> Bool {
         let documentDirectory :String = NSSearchPathForDirectoriesInDomains(
             .DocumentDirectory, .UserDomainMask, true)[0] as String
         
@@ -87,7 +99,7 @@ class Camembert {
         return true
     }
     
-    class func initDataBase(databaseFolder: String, nameDatabase :String) -> Bool{
+    public  class func initDataBase(databaseFolder: String, nameDatabase :String) -> Bool{
         DataAccess.access.DbPath = databaseFolder;
         
         let ret = sqlite3_open(databaseFolder.cStringUsingEncoding(NSUTF8StringEncoding)!,
@@ -98,8 +110,8 @@ class Camembert {
         DataAccess.access.nameDataBase = nameDatabase
         return true;
     }
-
-    class func createDataBase(nameDatabase: String) -> Bool {
+    
+    public class func createDataBase(nameDatabase: String) -> Bool {
         let documentDirectory :String = NSSearchPathForDirectoriesInDomains(
             .DocumentDirectory, .UserDomainMask, true)[0] as String
         
@@ -107,7 +119,7 @@ class Camembert {
         
         if sqlite3_open_v2(pathDatabase.cStringUsingEncoding(NSUTF8StringEncoding)!,
             &DataAccess.access.dataAccess, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), nil) != SQLITE_OK {
-
+                
                 DataAccess.access.dataAccess = nil
                 return false
         }
@@ -115,7 +127,7 @@ class Camembert {
         return true
     }
     
-    class func createDataBase(databaseFolder: String, nameDatabase: String) -> Bool {
+    public class func createDataBase(databaseFolder: String, nameDatabase: String) -> Bool {
         if DataAccess.access.DbPath == nil {
             DataAccess.access.DbPath = databaseFolder;
         }
@@ -130,7 +142,7 @@ class Camembert {
         return true
     }
     
-    class func closeDataBase() -> Bool {
+    public class func closeDataBase() -> Bool {
         if sqlite3_close(DataAccess.access.dataAccess) == SQLITE_OK {
             DataAccess.access.dataAccess = nil
             return true
@@ -138,7 +150,7 @@ class Camembert {
         DataAccess.access.dataAccess = nil
         return false
     }
-
+    
     func getObjectsWithQuery(query :String, table :String) -> [AnyObject]! {
         var ptrRequest :COpaquePointer = nil
         var objects :Array<AnyObject> = []
@@ -175,7 +187,7 @@ class Camembert {
         return objects
     }
     
-    class func execQuery(query :String) -> COpaquePointer {
+    public class func execQuery(query :String) -> COpaquePointer {
         var ptrRequest :COpaquePointer = nil
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
@@ -187,7 +199,7 @@ class Camembert {
         return ptrRequest
     }
     
-    class func getListTable() -> [String] {
+    public class func getListTable() -> [String] {
         var tables :[String] = []
         var ptrRequest :COpaquePointer = nil
         let requestListTables :String = "SELECT name FROM sqlite_master WHERE type='table';"

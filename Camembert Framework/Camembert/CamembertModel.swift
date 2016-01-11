@@ -3,12 +3,23 @@
 //  SwiftSQL
 //
 //  Created by Remi Robert on 20/08/14.
+//  Modified by Omar Bizreh on 11/1/16.
 //  Copyright (c) 2014 remirobert. All rights reserved.
 //
-
 import Foundation
-
-class CamembertModel :NSObject {
+// Code from https://github.com/nerdyc/Squeal
+#if os(iOS)
+#if arch(i386) || arch(x86_64)
+    import sqlite3_ios_simulator
+    #else
+    import sqlite3_ios
+#endif
+#else
+    import sqlite3_osx
+#endif
+// End of code
+    
+@objc public class CamembertModel :NSObject {
     
     private var nameTable :String! = nil
     var id :Int? = nil
