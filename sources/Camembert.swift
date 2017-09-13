@@ -17,11 +17,18 @@ typealias BIT = Bool
 
 
 enum Operator {
-    case LargerThan, LargerOrEqual, SmallerThan,SmallerOrEqual, EqualsTo, IsNull, NotNull
+    case LargerThan,
+    LargerOrEqual,
+    SmallerThan,
+    SmallerOrEqual,
+    EqualsTo,
+    IsNull,
+    NotNull
 }
 
 enum OrderOperator{
-    case Ascending, Descending
+    case Ascending,
+    Descending
 }
 
 enum Select {
@@ -33,7 +40,7 @@ enum Select {
 }
 
 class DataAccess {
-    var dataAccess :COpaquePointer = nil
+    var dataAccess :OpaquePointer? = nil
     var nameDataBase: String? = nil
     private var _dbpath: String? = nil;
     var DbPath: String? {
@@ -42,9 +49,14 @@ class DataAccess {
         }
         set (value){
             var isDir = ObjCBool(true)
-            if !NSFileManager.defaultManager().fileExistsAtPath(value!, isDirectory: &isDir){
+            FileManager.default.fileExists(atPath: value!,
+                                           isDirectory: &isDir)
+            if !FileManager.default.fileExists(atPath: value!,
+                                               isDirectory: &isDir){
                 do {
-                    try NSFileManager.defaultManager().createDirectoryAtPath(value!, withIntermediateDirectories: true, attributes: nil)
+                    try FileManager.default.createDirectory(atPath: value!,
+                                                            withIntermediateDirectories: true,
+                                                            attributes: nil)
                 }
                 catch {
                     print("DataAccess function raised an exception")
@@ -71,14 +83,14 @@ class Camembert {
         }
     }
     
-    class func initDataBase(nameDatabase :String) -> Bool {
+    class func initDataBase(_ nameDatabase :String) -> Bool {
         let documentDirectory :String = NSSearchPathForDirectoriesInDomains(
-            .DocumentDirectory, .UserDomainMask, true)[0] as String
+            .documentDirectory, .userDomainMask, true)[0] as String
         
         let pathDatabase = documentDirectory + "/" + nameDatabase
         
-        let ret = sqlite3_open(pathDatabase.cStringUsingEncoding(NSUTF8StringEncoding)!,
-            &DataAccess.access.dataAccess)
+        let ret = sqlite3_open(pathDatabase.cString(using: String.Encoding.utf8)!,
+                               &DataAccess.access.dataAccess)
         
         if ret != SQLITE_OK {
             return createDataBase(nameDatabase)
@@ -87,11 +99,12 @@ class Camembert {
         return true
     }
     
-    class func initDataBase(databaseFolder: String, nameDatabase :String) -> Bool{
+    class func initDataBase(_ databaseFolder: String,
+                            nameDatabase :String) -> Bool{
         DataAccess.access.DbPath = databaseFolder;
         
-        let ret = sqlite3_open(databaseFolder.cStringUsingEncoding(NSUTF8StringEncoding)!,
-            &DataAccess.access.dataAccess)
+        let ret = sqlite3_open(databaseFolder.cString(using: String.Encoding.utf8)!,
+                               &DataAccess.access.dataAccess)
         if ret != SQLITE_OK {
             return createDataBase(databaseFolder, nameDatabase: nameDatabase)
         }
@@ -99,14 +112,18 @@ class Camembert {
         return true;
     }
 
-    class func createDataBase(nameDatabase: String) -> Bool {
+    class func createDataBase(_ nameDatabase: String) -> Bool {
         let documentDirectory :String = NSSearchPathForDirectoriesInDomains(
-            .DocumentDirectory, .UserDomainMask, true)[0] as String
+            .documentDirectory,
+            .userDomainMask,
+            true)[0] as String
         
         let pathDatabase = documentDirectory + "/" + nameDatabase
         
-        if sqlite3_open_v2(pathDatabase.cStringUsingEncoding(NSUTF8StringEncoding)!,
-            &DataAccess.access.dataAccess, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), nil) != SQLITE_OK {
+        if sqlite3_open_v2(pathDatabase.cString(using: String.Encoding.utf8)!,
+                           &DataAccess.access.dataAccess,
+                           (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE),
+                           nil) != SQLITE_OK {
 
                 DataAccess.access.dataAccess = nil
                 return false
@@ -115,13 +132,15 @@ class Camembert {
         return true
     }
     
-    class func createDataBase(databaseFolder: String, nameDatabase: String) -> Bool {
+    class func createDataBase(_ databaseFolder: String, nameDatabase: String) -> Bool {
         if DataAccess.access.DbPath == nil {
             DataAccess.access.DbPath = databaseFolder;
         }
         
-        if sqlite3_open_v2((databaseFolder + "/" + nameDatabase).cStringUsingEncoding(NSUTF8StringEncoding)!,
-            &DataAccess.access.dataAccess, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), nil) != SQLITE_OK {
+        if sqlite3_open_v2((databaseFolder + "/" + nameDatabase).cString(using: String.Encoding.utf8)!,
+                           &DataAccess.access.dataAccess,
+                           (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE),
+                           nil) != SQLITE_OK {
                 
                 DataAccess.access.dataAccess = nil
                 return false
@@ -139,33 +158,45 @@ class Camembert {
         return false
     }
 
-    func getObjectsWithQuery(query :String, table :String) -> [AnyObject]! {
-        var ptrRequest :COpaquePointer = nil
+    func getObjectsWithQuery(_ query :String,
+                             table :String) -> [AnyObject]! {
+        var ptrRequest :OpaquePointer? = nil
         var objects :Array<AnyObject> = []
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
-            query.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
+                              query.cString(using: String.Encoding.utf8)!,
+                              -1,
+                              &ptrRequest,
+                              nil) != SQLITE_OK {
                 sqlite3_finalize(ptrRequest);
                 return nil
         }
         while (sqlite3_step(ptrRequest) == SQLITE_ROW) {
             let currentObject :AnyObject! = camembertCreateObject(table) as AnyObject
             
-            (currentObject as! CamembertModel).setId(Int(sqlite3_column_int(ptrRequest, 0)))
-            for var index = 1; index < Int(sqlite3_column_count(ptrRequest)); index++ {
-                let columName :String = NSString(CString: sqlite3_column_name(ptrRequest,
-                    CInt(index)), encoding: NSUTF8StringEncoding)! as String
+            (currentObject as! CamembertModel).setId(Int(sqlite3_column_int(ptrRequest,
+                                                                            0)))
+            for index in 1 ..< Int(sqlite3_column_count(ptrRequest)) {
+                let name = sqlite3_column_name(ptrRequest,
+                                               CInt(index))
+                let columName = String(cString: name!,
+                                       encoding: String.Encoding.utf8)!
                 
                 switch sqlite3_column_type(ptrRequest, CInt(index)) {
                 case SQLITE_INTEGER:
                     currentObject.setValue((Int(sqlite3_column_int(ptrRequest,
-                        CInt(index))) as AnyObject), forKey: columName)
+                                                                   CInt(index))) as AnyObject),
+                                           forKey: columName)
                 case SQLITE_FLOAT:
                     currentObject.setValue((Float(sqlite3_column_double(ptrRequest,
-                        CInt(index))) as AnyObject), forKey: columName)
+                                                                        CInt(index))) as AnyObject),
+                                           forKey: columName)
                 case SQLITE_TEXT:
-                    let stringValue = String.fromCString(UnsafePointer<CChar>(sqlite3_column_text(ptrRequest, CInt(index))))
-                    currentObject.setValue(stringValue, forKey: columName)
+                    let text = sqlite3_column_text(ptrRequest,
+                                                   CInt(index))
+                    let stringValue = String(cString:text!)
+                    currentObject.setValue(stringValue,
+                                           forKey: columName)
                 default: Void()
                 }
             }
@@ -175,11 +206,14 @@ class Camembert {
         return objects
     }
     
-    class func execQuery(query :String) -> COpaquePointer {
-        var ptrRequest :COpaquePointer = nil
+    class func execQuery(query :String) -> OpaquePointer? {
+        var ptrRequest :OpaquePointer? = nil
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
-            query.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
+                              query.cString(using: String.Encoding.utf8)!,
+                              -1,
+                              &ptrRequest,
+                              nil) != SQLITE_OK {
                 sqlite3_finalize(ptrRequest);
                 return nil
         }
@@ -189,16 +223,20 @@ class Camembert {
     
     class func getListTable() -> [String] {
         var tables :[String] = []
-        var ptrRequest :COpaquePointer = nil
+        var ptrRequest :OpaquePointer? = nil
         let requestListTables :String = "SELECT name FROM sqlite_master WHERE type='table';"
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
-            requestListTables.cStringUsingEncoding(NSUTF8StringEncoding)!, -1, &ptrRequest, nil) != SQLITE_OK {
+                              requestListTables.cString(using: String.Encoding.utf8)!,
+                              -1,
+                              &ptrRequest,
+                              nil) != SQLITE_OK {
                 sqlite3_finalize(ptrRequest);
                 return tables
         }
         while sqlite3_step(ptrRequest) == SQLITE_ROW {
-            tables.append(String.fromCString(UnsafePointer<CChar>(sqlite3_column_text(ptrRequest, 0)))!)
+            tables.append(String(cString:sqlite3_column_text(ptrRequest,
+                                                             0)))
         }
         sqlite3_finalize(ptrRequest);
         return tables
