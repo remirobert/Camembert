@@ -21,7 +21,7 @@ class CamembertModel :NSObject {
         let _ = Camembert.closeDataBase()
         if let dbFolder = DataAccess.access.DbPath {
             let _ = Camembert.initDataBase(dbFolder,
-                                          nameDatabase: DataAccess.access.nameDataBase!)
+                                           nameDatabase: DataAccess.access.nameDataBase!)
         }else{
             let _ = Camembert.initDataBase(DataAccess.access.nameDataBase!)
         }
@@ -38,6 +38,7 @@ class CamembertModel :NSObject {
         if self.id != nil {
             return OperationResult.Error_DuplicatedID;
         }
+        let _ = self.createTable()
         CamembertModel.openConnection()
         
         let mirror = Mirror(reflecting: self)
@@ -487,13 +488,12 @@ class CamembertModel :NSObject {
     override init() {
         super.init()
         self._initNameTable()
-        let _ = self.createTable()
     }
     
     init(id :Int) {
         super.init()
         self._initNameTable()
-        let _ = self.createTable()
         self._initWithId(id)
     }
 }
+
