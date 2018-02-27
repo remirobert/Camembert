@@ -8,7 +8,8 @@
 
 #import "Camembert.h"
 
-BOOL camembertExecSqlite3(void *ptrSqlite3, const char *request) {
+BOOL camembertExecSqlite3(void *ptrSqlite3,
+                          const char *request) {
     char *msgErr;
     if (sqlite3_exec(ptrSqlite3,
                      request,

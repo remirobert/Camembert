@@ -20,8 +20,8 @@ extension Array {
     func TakeRange(startIndex: Int, offset: Int) -> Array{
         var resultArray = Array()
         var m_offset = offset
-        if m_offset > self.count {
-            m_offset = self.count
+        if m_offset > count {
+            m_offset = count
         }
         for i in startIndex...m_offset {
             resultArray.append(self[i])
@@ -30,7 +30,7 @@ extension Array {
     }
     
     func FirstOrDefault() -> Element?{
-        if self.count > 0 {
+        if count > 0 {
             return self[0]
         }else{
             return nil
@@ -38,8 +38,8 @@ extension Array {
     }
     
     func LastOrDefault() -> Element?{
-        if self.count > 0{
-            return self[self.count - 1]
+        if count > 0{
+            return self[count - 1]
         }else{
             return nil
         }

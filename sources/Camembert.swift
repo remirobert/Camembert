@@ -45,7 +45,7 @@ class DataAccess {
     private var _dbpath: String? = nil;
     var DbPath: String? {
         get{
-            return self._dbpath;
+            return _dbpath;
         }
         set (value){
             var isDir = ObjCBool(true)
@@ -63,7 +63,7 @@ class DataAccess {
                 }
                 
             }
-            self._dbpath = value;
+            _dbpath = value;
         }
     }
 
@@ -99,7 +99,8 @@ class Camembert {
         let ret = sqlite3_open(databaseFolder.cString(using: String.Encoding.utf8)!,
                                &DataAccess.access.dataAccess)
         if ret != SQLITE_OK {
-            return createDataBase(databaseFolder, nameDatabase: nameDatabase)
+            return createDataBase(databaseFolder,
+                                  nameDatabase: nameDatabase)
         }
         DataAccess.access.nameDataBase = nameDatabase
         return true;
@@ -125,12 +126,15 @@ class Camembert {
         return true
     }
     
-    class func createDataBase(_ databaseFolder: String, nameDatabase: String) -> Bool {
+    class func createDataBase(_ databaseFolder: String,
+                              nameDatabase: String) -> Bool {
         if DataAccess.access.DbPath == nil {
             DataAccess.access.DbPath = databaseFolder;
         }
         
-        if sqlite3_open_v2((databaseFolder + "/" + nameDatabase).cString(using: String.Encoding.utf8)!,
+        let pathDatabase = databaseFolder + "/" + nameDatabase
+        
+        if sqlite3_open_v2(pathDatabase.cString(using: String.Encoding.utf8)!,
                            &DataAccess.access.dataAccess,
                            (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE),
                            nil) != SQLITE_OK {
@@ -167,7 +171,7 @@ class Camembert {
         while (sqlite3_step(ptrRequest) == SQLITE_ROW) {
             let currentObject :AnyObject! = camembertCreateObject(table) as AnyObject
             
-            (currentObject as! CamembertModel).setId(Int(sqlite3_column_int(ptrRequest,
+            currentObject.setId(Int(sqlite3_column_int(ptrRequest,
                                                                             0)))
             for index in 1 ..< Int(sqlite3_column_count(ptrRequest)) {
                 let name = sqlite3_column_name(ptrRequest,

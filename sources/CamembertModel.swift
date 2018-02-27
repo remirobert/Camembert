@@ -8,9 +8,10 @@
 
 import Foundation
 
+@objcMembers
 class CamembertModel :NSObject {
     
-    private var nameTable :String! = nil
+    private var nameTable = ""
     var id :Int? = nil
     
     func setId(_ id :Int) {
@@ -35,15 +36,15 @@ class CamembertModel :NSObject {
     }
     
     func push() -> OperationResult{
-        if self.id != nil {
+        if id != nil {
             return OperationResult.Error_DuplicatedID;
         }
-        let _ = self.createTable()
+        let _ = createTable()
         CamembertModel.openConnection()
         
         let mirror = Mirror(reflecting: self)
         let children = mirror.children
-        var requestPush = "INSERT INTO " + self.nameTable + " ("
+        var requestPush = "INSERT INTO " + nameTable + " ("
         
         requestPush += children.map({ (child) -> String in
             child.label ?? ""
@@ -82,7 +83,7 @@ class CamembertModel :NSObject {
         
         let result = camembertExecSqlite3(UnsafeMutableRawPointer(DataAccess.access.dataAccess),
                                           requestPush.cString(using: String.Encoding.utf8)!)
-        self.id = Int(sqlite3_last_insert_rowid(DataAccess.access.dataAccess))
+        id = Int(sqlite3_last_insert_rowid(DataAccess.access.dataAccess))
         var opResult: OperationResult = OperationResult.Success
         if !result{
             opResult = OperationResult.Error_GeneralFailure
@@ -92,7 +93,7 @@ class CamembertModel :NSObject {
     
     func update() -> OperationResult
     {
-        if self.id == -1
+        if id == -1
         {
             return OperationResult.Error_NoRecordFoundWithID
         }
@@ -100,34 +101,28 @@ class CamembertModel :NSObject {
         
         let mirror = Mirror(reflecting: self)
         let children = mirror.children // .dropFirst()
-        let lastIndex = children.endIndex
         
-        var requestUpdate :String = "UPDATE \(self.nameTable) SET "
-        for i in children.indices
-        {
-            let currentValue = children[i].value
+        var requestUpdate :String = "UPDATE \(nameTable) SET "
+        requestUpdate += children.map { (child) -> String in
+            let currentValue = child.value
             
             switch currentValue {
-            case _ where (currentValue as? TEXT != nil): requestUpdate += "\(children[i].label!) = \"\(currentValue)\""
+            case _ where (currentValue as? TEXT != nil):
+                return "\(child.label!) = \"\(currentValue)\""
             case _ where (currentValue as? DATE_TIME != nil):
                 let date = (currentValue as! Date)
                 return "\(child.label!) = \"\(date.timeIntervalSince1970)\""
                 
             case _ where (currentValue as? BIT != nil):
                 let result = (currentValue as! Bool) ? "1" : "0";
-                requestUpdate += "\(children[i].label!) = \"\(result)\""
-            default: requestUpdate += "\(children[i].label!) = \(currentValue)"
+                return "\(child.label!) = \"\(result)\""
+            default:
+                return "\(child.label!) = \(currentValue)"
             }
-            
-            if (i == lastIndex)
-            {
-                requestUpdate += " WHERE id = \(self.id!);"
             }
-            else
-            {
-                requestUpdate += ", "
-            }
-        }
+            .joined(separator: ", ")
+        
+        requestUpdate += " WHERE id = \(id!);"
         
         let result = camembertExecSqlite3(UnsafeMutableRawPointer(DataAccess.access.dataAccess),
                                           requestUpdate.cString(using: String.Encoding.utf8)!)
@@ -139,15 +134,15 @@ class CamembertModel :NSObject {
     }
     
     func remove() -> OperationResult{
-        if self.id == nil {
+        if id == nil {
             return OperationResult.Error_NoRecordFoundWithID;
         }
         CamembertModel.openConnection()
-        let requestDelete :String = "DELETE FROM " + self.nameTable + " WHERE id=\(self.id!)"
+        let requestDelete :String = "DELETE FROM " + nameTable + " WHERE id=\(id!)"
         
         let result = camembertExecSqlite3(UnsafeMutableRawPointer(DataAccess.access.dataAccess),
                                           requestDelete.cString(using: String.Encoding.utf8)!)
-        self.id = -1
+        id = -1
         if !result{
             return OperationResult.Error_GeneralFailure
         }
@@ -167,14 +162,14 @@ class CamembertModel :NSObject {
             let currentKey = child.label!
             switch currentValue
             {
-            case _ where (currentValue as? INTEGER != nil):
-                arrayString.append(currentKey + " INTEGER")
-            case _ where (currentValue as? REAL != nil):
-                arrayString.append(currentKey + " REAL")
             case _ where (currentValue as? TEXT != nil):
                 arrayString.append(currentKey + " TEXT")
+            case _ where (currentValue as? REAL != nil):
+                arrayString.append(currentKey + " REAL")
+            case _ where (currentValue as? INTEGER != nil):
+                arrayString.append(currentKey + " INTEGER")
             case _ where (currentValue as? DATE_TIME != nil):
-                arrayString.append(currentKey + " TEXT")
+                arrayString.append(currentKey + " REAL")
             case _ where (currentValue as? BIT != nil):
                 arrayString.append(currentKey + " INTEGER")
             default: return nil
@@ -207,7 +202,7 @@ class CamembertModel :NSObject {
         CamembertModel.openConnection()
         
         for currentTable in Camembert.getListTable() {
-            if currentTable == self.nameTable {
+            if currentTable == nameTable {
                 return true
             }
         }
@@ -217,7 +212,7 @@ class CamembertModel :NSObject {
     class func getNameTable(_ tmpNameTable :inout String) -> String {
         let parseString = "0123456789"
         
-        for currentNumberParse in parseString.characters {
+        for currentNumberParse in parseString {
             var parseName = tmpNameTable.components(separatedBy: String(currentNumberParse))
             if parseName.count > 0 {
                 tmpNameTable = parseName[parseName.count - 1]
@@ -230,11 +225,13 @@ class CamembertModel :NSObject {
         CamembertModel.openConnection()
         
         var tmpNameTable = String(cString: object_getClassName(self),
-                                  encoding: String.Encoding.utf8)
-        self.nameTable = CamembertModel.getNameTable(&tmpNameTable!).components(separatedBy: ".")[1]
+                                  encoding: String.Encoding.utf8)!
+        tmpNameTable = tmpNameTable.components(separatedBy:".")[1]
+        nameTable = CamembertModel.getNameTable(&tmpNameTable)
     }
     
-    func sendRequest(ptrRequest :inout OpaquePointer?, request :String) -> Bool {
+    func sendRequest(ptrRequest :inout OpaquePointer?,
+                     request :String) -> Bool {
         CamembertModel.openConnection()
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
@@ -252,9 +249,9 @@ class CamembertModel :NSObject {
     func createTable() -> Bool {
         CamembertModel.openConnection()
         
-        if self.isTableExist() == false {
-            var requestCreateTable :String = "CREATE TABLE " + self.nameTable + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
-            if let configurationTable = self.getSchemaTable() {
+        if isTableExist() == false {
+            var requestCreateTable :String = "CREATE TABLE \(nameTable) (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            if let configurationTable = getSchemaTable() {
                 for index in 0 ..< configurationTable.count {
                     switch index {
                     case configurationTable.count - 1: requestCreateTable += configurationTable[index]
@@ -297,7 +294,7 @@ class CamembertModel :NSObject {
     func _initWithId(_ id :Int) {
         CamembertModel.openConnection()
         
-        let requestInit :String = "SELECT * FROM " + self.nameTable + " WHERE id=\(id);"
+        let requestInit :String = "SELECT * FROM \(nameTable) WHERE id=\(id);"
         var ptrRequest :OpaquePointer? = nil
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
@@ -311,14 +308,14 @@ class CamembertModel :NSObject {
         
         if sqlite3_step(ptrRequest) == SQLITE_ROW
         {
-            self.setId(Int(sqlite3_column_int(ptrRequest, 0)))
+            setId(Int(sqlite3_column_int(ptrRequest, 0)))
             for index in 1 ..< Int(sqlite3_column_count(ptrRequest)) {
                 let columName :String = String(cString: sqlite3_column_name(ptrRequest, CInt(index))!,
                                                encoding: String.Encoding.utf8)!
                 
                 switch sqlite3_column_type(ptrRequest, CInt(index)) {
                 case SQLITE_INTEGER:
-                    self.setValue((Int(sqlite3_column_int(ptrRequest,
+                    setValue((Int(sqlite3_column_int(ptrRequest,
                                                           CInt(index))) as AnyObject), forKey: columName)
                 case SQLITE_FLOAT:
                     if isDate(columName) {
@@ -332,7 +329,7 @@ class CamembertModel :NSObject {
                     }
                 case SQLITE_TEXT:
                     let stringValue = String(cString:sqlite3_column_text(ptrRequest, CInt(index)))
-                    self.setValue(stringValue, forKey: columName)
+                    setValue(stringValue, forKey: columName)
                 default: Void()
                 }
             }
@@ -340,13 +337,13 @@ class CamembertModel :NSObject {
         sqlite3_finalize(ptrRequest);
     }
     
-    class func getRawClassName() -> String? {
+    class func getRawClassName() -> String {
         let name = NSStringFromClass(self)
         let components = name.components(separatedBy:".")
-        return components.last
+        return components.last ?? ""
     }
     
-    class func select(selectRequest select: Select) -> [AnyObject]? {
+    class func select<T: CamembertModel>(selectRequest select: Select) -> [T] {
         let camembert = Camembert()
         let table = getRawClassName()
         var requestSelect: String? = nil
@@ -364,7 +361,7 @@ class CamembertModel :NSObject {
             default:
                 op = "desc"
             }
-            requestSelect = "SELECT * FROM \(table!) ORDER BY \(m_OrderBy) \(op)"
+            requestSelect = "SELECT * FROM \(table) ORDER BY \(m_OrderBy) \(op)"
         case .Limit(let value, let OrderOperator, let OrderBy):
             var op: String;
             if !OrderBy.isEmpty {
@@ -376,7 +373,7 @@ class CamembertModel :NSObject {
             default:
                 op = "desc"
             }
-            requestSelect = "SELECT * FROM \(table!) LIMIT \(value) ORDER BY \(m_OrderBy) \(op)"
+            requestSelect = "SELECT * FROM \(table) LIMIT \(value) ORDER BY \(m_OrderBy) \(op)"
         case .Between(let startValue, let endValue, let OrderOperator, let OrderBy):
             var op: String;
             if !OrderBy.isEmpty {
@@ -388,7 +385,7 @@ class CamembertModel :NSObject {
             default:
                 op = "desc"
             }
-            requestSelect = "SELECT * FROM \(table!) WHERE ID BETWEEN \(startValue) AND \(endValue) ORDER BY \(m_OrderBy) \(op)"
+            requestSelect = "SELECT * FROM \(table) WHERE ID BETWEEN \(startValue) AND \(endValue) ORDER BY \(m_OrderBy) \(op)"
         case .CustomRequest(let request):
             requestSelect = request
         case .Where(let Field, let Operator, let value, let OrderOperator, let OrderBy):
@@ -406,8 +403,8 @@ class CamembertModel :NSObject {
             case .EqualsTo:
                 var resultValue = String();
                 
-                if let _ = value as? BIT{
-                    return nil
+                if let value = value as? BIT{
+                    resultValue = value ? "1" : "0";
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
                 }else if let x = value as? DATE_TIME{
@@ -415,14 +412,14 @@ class CamembertModel :NSObject {
                 }else{
                     resultValue = "\(value)";
                 }
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) = \(resultValue) ORDER BY \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table) WHERE \(Field) = \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .IsNull:
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL"
+                requestSelect = "SELECT * FROM \(table) WHERE \(Field) IS NULL"
                 break;
             case .LargerOrEqual:
                 var resultValue = String();
                 if let _ = value as? BIT{
-                    return nil
+                    resultValue = (value as! Bool) ? "1" : "0";
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
                 }else if let x = value as? DATE_TIME{
@@ -430,11 +427,11 @@ class CamembertModel :NSObject {
                 }else{
                     resultValue = "\(value)";
                 }
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) >= \(resultValue) ORDER BY \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table) WHERE \(Field) >= \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .LargerThan:
                 var resultValue = String();
                 if let _ = value as? BIT{
-                    return nil
+                    resultValue = (value as! Bool) ? "1" : "0";
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
                 }else if let x = value as? DATE_TIME{
@@ -442,13 +439,13 @@ class CamembertModel :NSObject {
                 }else{
                     resultValue = "\(value)";
                 }
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) > \(resultValue) ORDER BY \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table) WHERE \(Field) > \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .NotNull:
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NOT NULL ORDER BY \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table) WHERE \(Field) IS NOT NULL ORDER BY \(m_OrderBy) \(op)"
             case .SmallerOrEqual:
                 var resultValue = String();
                 if let _ = value as? BIT{
-                    return nil
+                    resultValue = (value as! Bool) ? "1" : "0";
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
                 }else if let x = value as? DATE_TIME{
@@ -456,11 +453,11 @@ class CamembertModel :NSObject {
                 }else{
                     resultValue = "\(value)";
                 }
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) <= \(resultValue) ORDER BY \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table) WHERE \(Field) <= \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             case .SmallerThan:
                 var resultValue = String();
                 if let _ = value as? BIT{
-                    return nil
+                    resultValue = (value as! Bool) ? "1" : "0";
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
                 }else if let x = value as? DATE_TIME{
@@ -468,9 +465,7 @@ class CamembertModel :NSObject {
                 }else{
                     resultValue = "\(value)";
                 }
-                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) < \(resultValue) ORDER BY \(m_OrderBy) \(op)"
-//            case .IsNull:
-//                requestSelect = "SELECT * FROM \(table!) WHERE \(Field) IS NULL ORDER BY \(m_OrderBy) \(op)"
+                requestSelect = "SELECT * FROM \(table) WHERE \(Field) < \(resultValue) ORDER BY \(m_OrderBy) \(op)"
             }
             break;
         }
@@ -484,7 +479,7 @@ class CamembertModel :NSObject {
     class func removeTable() {
         CamembertModel.openConnection()
         let table = getRawClassName()
-        let requestRemove :String = "DROP TABLE IF EXISTS \(table!);"
+        let requestRemove :String = "DROP TABLE IF EXISTS \(table);"
         
         camembertExecSqlite3(UnsafeMutableRawPointer(DataAccess.access.dataAccess),
                              requestRemove.cString(using: String.Encoding.utf8)!)
@@ -492,13 +487,12 @@ class CamembertModel :NSObject {
     
     override init() {
         super.init()
-        self._initNameTable()
+        _initNameTable()
     }
     
     init(id :Int) {
         super.init()
-        self._initNameTable()
-        self._initWithId(id)
+        _initNameTable()
+        _initWithId(id)
     }
 }
-
