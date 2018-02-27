@@ -470,10 +470,7 @@ class CamembertModel :NSObject {
             break;
         }
         CamembertModel.openConnection()
-        if let ret = camembert.getObjectsWithQuery(requestSelect!, table: table!) {
-            return ret
-        }
-        return nil
+        return camembert.getObjectsWithQuery(requestSelect!, table: table) as [T]
     }
     
     class func removeTable() {

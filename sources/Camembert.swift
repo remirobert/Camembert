@@ -155,10 +155,10 @@ class Camembert {
         return false
     }
 
-    func getObjectsWithQuery(_ query :String,
-                             table :String) -> [AnyObject]! {
+    func getObjectsWithQuery<T: CamembertModel>(_ query :String,
+                             table :String) -> [T] {
         var ptrRequest :OpaquePointer? = nil
-        var objects :Array<AnyObject> = []
+        var objects :Array<T> = []
         
         if sqlite3_prepare_v2(DataAccess.access.dataAccess,
                               query.cString(using: String.Encoding.utf8)!,
@@ -166,10 +166,10 @@ class Camembert {
                               &ptrRequest,
                               nil) != SQLITE_OK {
                 sqlite3_finalize(ptrRequest);
-                return nil
+                return [T]()
         }
         while (sqlite3_step(ptrRequest) == SQLITE_ROW) {
-            let currentObject :AnyObject! = camembertCreateObject(table) as AnyObject
+            let currentObject: T = camembertCreateObject(table) as! T
             
             currentObject.setId(Int(sqlite3_column_int(ptrRequest,
                                                                             0)))
