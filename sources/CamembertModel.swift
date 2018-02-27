@@ -58,11 +58,8 @@ class CamembertModel :NSObject {
             switch currentValue = child.value {
             case _ where (currentValue as? TEXT != nil): result = "\"\(currentValue)\""
             case _ where (currentValue as? DATE_TIME != nil):
-                let dateformatter = DateFormatter();
-                dateformatter.dateFormat = Camembert.Date_Time_Format;
-                let date = (currentValue as! NSDate)
-                _ = dateformatter.date(from: "\(date)")
-                result = "\"\(date)\""
+                let date = (currentValue as! Date)
+                result = "\"\(date.timeIntervalSince1970)\""
                 break;
             case _ where (currentValue as? BIT != nil):
                 if (currentValue as! Bool)
@@ -113,11 +110,8 @@ class CamembertModel :NSObject {
             switch currentValue {
             case _ where (currentValue as? TEXT != nil): requestUpdate += "\(children[i].label!) = \"\(currentValue)\""
             case _ where (currentValue as? DATE_TIME != nil):
-                let dateformatter = DateFormatter();
-                dateformatter.dateFormat = Camembert.Date_Time_Format;
-                let date = (currentValue as! NSDate)
-                requestUpdate += "\(children[i].label!) = \"\(date)\""
-                break;
+                let date = (currentValue as! Date)
+                return "\(child.label!) = \"\(date.timeIntervalSince1970)\""
                 
             case _ where (currentValue as? BIT != nil):
                 let result = (currentValue as! Bool) ? "1" : "0";
@@ -188,6 +182,25 @@ class CamembertModel :NSObject {
         }
         
         return arrayString
+    }
+    
+    func isDate(_ key: String) -> Bool {
+        let children = Mirror(reflecting: self).children
+        
+        for child in children.filter({ (child) -> Bool in
+            guard let label = child.label else { return false }
+            return label == key
+        })
+        {
+            let currentValue = child.value
+            switch currentValue
+            {
+            case _ where (currentValue as? DATE_TIME != nil):
+                return true
+            default: return false
+            }
+        }
+        return false
     }
     
     func isTableExist() -> Bool {
@@ -308,8 +321,15 @@ class CamembertModel :NSObject {
                     self.setValue((Int(sqlite3_column_int(ptrRequest,
                                                           CInt(index))) as AnyObject), forKey: columName)
                 case SQLITE_FLOAT:
-                    self.setValue((Float(sqlite3_column_double(ptrRequest,
-                                                               CInt(index))) as AnyObject), forKey: columName)
+                    if isDate(columName) {
+                        setValue(Date(timeIntervalSince1970: TimeInterval(sqlite3_column_double(ptrRequest,
+                                                                                                     CInt(index)))),
+                                      forKey: columName)
+                    } else {
+                        setValue((Float(sqlite3_column_double(ptrRequest,
+                                                                   CInt(index))) as AnyObject),
+                                      forKey: columName)
+                    }
                 case SQLITE_TEXT:
                     let stringValue = String(cString:sqlite3_column_text(ptrRequest, CInt(index)))
                     self.setValue(stringValue, forKey: columName)
@@ -391,7 +411,7 @@ class CamembertModel :NSObject {
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
                 }else if let x = value as? DATE_TIME{
-                    resultValue = "\"\(x)\""
+                    resultValue = "\"\(x.timeIntervalSince1970)\""
                 }else{
                     resultValue = "\(value)";
                 }
@@ -406,7 +426,7 @@ class CamembertModel :NSObject {
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
                 }else if let x = value as? DATE_TIME{
-                    resultValue = "\"\(x)\""
+                    resultValue = "\"\(x.timeIntervalSince1970)\""
                 }else{
                     resultValue = "\(value)";
                 }
@@ -418,7 +438,7 @@ class CamembertModel :NSObject {
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
                 }else if let x = value as? DATE_TIME{
-                    resultValue = "\"\(x)\""
+                    resultValue = "\"\(x.timeIntervalSince1970)\""
                 }else{
                     resultValue = "\(value)";
                 }
@@ -432,7 +452,7 @@ class CamembertModel :NSObject {
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
                 }else if let x = value as? DATE_TIME{
-                    resultValue = "\"\(x)\""
+                    resultValue = "\"\(x.timeIntervalSince1970)\""
                 }else{
                     resultValue = "\(value)";
                 }
@@ -444,7 +464,7 @@ class CamembertModel :NSObject {
                 }else if let x = value as? TEXT {
                     resultValue = "\"\(x)\""
                 }else if let x = value as? DATE_TIME{
-                    resultValue = "\"\(x)\""
+                    resultValue = "\"\(x.timeIntervalSince1970)\""
                 }else{
                     resultValue = "\(value)";
                 }

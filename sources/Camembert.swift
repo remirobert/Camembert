@@ -12,7 +12,7 @@ import Foundation
 typealias INTEGER = Int
 typealias REAL = Float
 typealias TEXT = String
-typealias DATE_TIME = NSDate
+typealias DATE_TIME = Date
 typealias BIT = Bool
 
 
@@ -76,19 +76,12 @@ class DataAccess {
 }
 
 class Camembert {
-    class var Date_Time_Format:String {
-        get
-        {
-            return "yyyy'-'MM'-'dd hh':'mm':'ss'";
-        }
-    }
     
     class func initDataBase(_ nameDatabase :String) -> Bool {
         let documentDirectory :String = NSSearchPathForDirectoriesInDomains(
             .documentDirectory, .userDomainMask, true)[0] as String
         
         let pathDatabase = documentDirectory + "/" + nameDatabase
-        
         let ret = sqlite3_open(pathDatabase.cString(using: String.Encoding.utf8)!,
                                &DataAccess.access.dataAccess)
         
@@ -188,9 +181,15 @@ class Camembert {
                                                                    CInt(index))) as AnyObject),
                                            forKey: columName)
                 case SQLITE_FLOAT:
-                    currentObject.setValue((Float(sqlite3_column_double(ptrRequest,
-                                                                        CInt(index))) as AnyObject),
-                                           forKey: columName)
+                    if currentObject.isDate(columName) {
+                        currentObject.setValue(Date(timeIntervalSince1970:TimeInterval(sqlite3_column_double(ptrRequest,
+                                                                                                             CInt(index)))),
+                                               forKey: columName)
+                    } else {
+                        currentObject.setValue((Float(sqlite3_column_double(ptrRequest,
+                                                                            CInt(index))) as AnyObject),
+                                               forKey: columName)
+                    }
                 case SQLITE_TEXT:
                     let text = sqlite3_column_text(ptrRequest,
                                                    CInt(index))
